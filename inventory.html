@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory - UNIPOS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar sidebar-glass" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="13" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="4" y="13" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <path d="M13 15h7M13 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="sidebar-logo-text">UNIPOS</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar" id="user-avatar"><span id="user-initials"></span></div>
+          <div class="user-info">
+            <div class="user-name" id="user-name"></div>
+            <div class="user-role" id="user-role"></div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logout-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">Inventory</h1>
+        <p class="page-subtitle" id="inventory-subtitle">Manage product inventory</p>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="glass-card stat-card">
+          <div class="stat-info">
+            <h3>Total Products</h3>
+            <div class="stat-value">245</div>
+          </div>
+          <div class="stat-icon blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              <line x1="12" y1="22.08" x2="12" y2="12"/>
+            </svg>
+          </div>
+        </div>
+        
+        <div class="glass-card stat-card">
+          <div class="stat-info">
+            <h3>Low Stock Items</h3>
+            <div class="stat-value">8</div>
+          </div>
+          <div class="stat-icon red">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
+        </div>
+        
+        <div class="glass-card stat-card">
+          <div class="stat-info">
+            <h3>Total Value</h3>
+            <div class="stat-value">₱342,500</div>
+          </div>
+          <div class="stat-icon green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+      
+      <div class="glass-card content-card">
+        <div class="card-header">
+          <h2 class="card-title">Inventory List</h2>
+          <button class="btn btn-primary" id="update-stock-btn" style="width: auto; padding: 0.5rem 1rem; height: auto;">
+            Update Stock
+          </button>
+        </div>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 2px solid rgba(0,0,0,0.1);">
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Product</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Current Stock</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Min. Stock</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Last Updated</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Coffee Beans 1kg</td>
+                <td style="padding: 1rem;">145</td>
+                <td style="padding: 1rem; color: var(--gray-500);">50</td>
+                <td style="padding: 1rem; color: var(--gray-500);">Jan 12, 2025</td>
+                <td style="padding: 1rem;"><span class="list-item-badge success">Good</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Organic Milk 1L</td>
+                <td style="padding: 1rem;">234</td>
+                <td style="padding: 1rem; color: var(--gray-500);">100</td>
+                <td style="padding: 1rem; color: var(--gray-500);">Jan 13, 2025</td>
+                <td style="padding: 1rem;"><span class="list-item-badge success">Good</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Almond Milk 1L</td>
+                <td style="padding: 1rem;">5</td>
+                <td style="padding: 1rem; color: var(--gray-500);">15</td>
+                <td style="padding: 1rem; color: var(--gray-500);">Jan 10, 2025</td>
+                <td style="padding: 1rem;"><span class="list-item-badge danger">Low</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Protein Bars</td>
+                <td style="padding: 1rem;">12</td>
+                <td style="padding: 1rem; color: var(--gray-500);">25</td>
+                <td style="padding: 1rem; color: var(--gray-500);">Jan 11, 2025</td>
+                <td style="padding: 1rem;"><span class="list-item-badge warning">Low</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Greek Yogurt 500g</td>
+                <td style="padding: 1rem;">67</td>
+                <td style="padding: 1rem; color: var(--gray-500);">30</td>
+                <td style="padding: 1rem; color: var(--gray-500);">Jan 13, 2025</td>
+                <td style="padding: 1rem;"><span class="list-item-badge success">Good</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Energy Drink 500ml</td>
+                <td style="padding: 1rem;">156</td>
+                <td style="padding: 1rem; color: var(--gray-500);">75</td>
+                <td style="padding: 1rem; color: var(--gray-500);">Jan 12, 2025</td>
+                <td style="padding: 1rem;"><span class="list-item-badge success">Good</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

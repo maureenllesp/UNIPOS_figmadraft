@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Products - UNIPOS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar sidebar-glass" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="13" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="4" y="13" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <path d="M13 15h7M13 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="sidebar-logo-text">UNIPOS</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar" id="user-avatar">
+            <span id="user-initials"></span>
+          </div>
+          <div class="user-info">
+            <div class="user-name" id="user-name"></div>
+            <div class="user-role" id="user-role"></div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logout-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">Products</h1>
+        <p class="page-subtitle">Manage your product catalog</p>
+      </div>
+      
+      <div class="glass-card content-card">
+        <div class="card-header">
+          <h2 class="card-title">Product List</h2>
+          <button class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; height: auto;">
+            Add Product
+          </button>
+        </div>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 2px solid rgba(0,0,0,0.1);">
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Product Name</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">SKU</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Category</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Price</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Stock</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Status</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Coffee Beans 1kg</td>
+                <td style="padding: 1rem; color: var(--gray-500);">COF-001</td>
+                <td style="padding: 1rem;">Beverages</td>
+                <td style="padding: 1rem; font-weight: 600;">₱450</td>
+                <td style="padding: 1rem;">145</td>
+                <td style="padding: 1rem;">
+                  <span class="list-item-badge success">Active</span>
+                </td>
+                <td style="padding: 1rem;">
+                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Organic Milk 1L</td>
+                <td style="padding: 1rem; color: var(--gray-500);">MLK-002</td>
+                <td style="padding: 1rem;">Dairy</td>
+                <td style="padding: 1rem; font-weight: 600;">₱85</td>
+                <td style="padding: 1rem;">234</td>
+                <td style="padding: 1rem;">
+                  <span class="list-item-badge success">Active</span>
+                </td>
+                <td style="padding: 1rem;">
+                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Whole Wheat Bread</td>
+                <td style="padding: 1rem; color: var(--gray-500);">BRD-003</td>
+                <td style="padding: 1rem;">Bakery</td>
+                <td style="padding: 1rem; font-weight: 600;">₱55</td>
+                <td style="padding: 1rem;">89</td>
+                <td style="padding: 1rem;">
+                  <span class="list-item-badge success">Active</span>
+                </td>
+                <td style="padding: 1rem;">
+                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Greek Yogurt 500g</td>
+                <td style="padding: 1rem; color: var(--gray-500);">YOG-004</td>
+                <td style="padding: 1rem;">Dairy</td>
+                <td style="padding: 1rem; font-weight: 600;">₱120</td>
+                <td style="padding: 1rem;">67</td>
+                <td style="padding: 1rem;">
+                  <span class="list-item-badge success">Active</span>
+                </td>
+                <td style="padding: 1rem;">
+                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Almond Milk 1L</td>
+                <td style="padding: 1rem; color: var(--gray-500);">MLK-005</td>
+                <td style="padding: 1rem;">Dairy Alternative</td>
+                <td style="padding: 1rem; font-weight: 600;">₱95</td>
+                <td style="padding: 1rem;">5</td>
+                <td style="padding: 1rem;">
+                  <span class="list-item-badge warning">Low Stock</span>
+                </td>
+                <td style="padding: 1rem;">
+                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Protein Bars</td>
+                <td style="padding: 1rem; color: var(--gray-500);">SNK-006</td>
+                <td style="padding: 1rem;">Snacks</td>
+                <td style="padding: 1rem; font-weight: 600;">₱65</td>
+                <td style="padding: 1rem;">12</td>
+                <td style="padding: 1rem;">
+                  <span class="list-item-badge warning">Low Stock</span>
+                </td>
+                <td style="padding: 1rem;">
+                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Energy Drink 500ml</td>
+                <td style="padding: 1rem; color: var(--gray-500);">BEV-007</td>
+                <td style="padding: 1rem;">Beverages</td>
+                <td style="padding: 1rem; font-weight: 600;">₱45</td>
+                <td style="padding: 1rem;">156</td>
+                <td style="padding: 1rem;">
+                  <span class="list-item-badge success">Active</span>
+                </td>
+                <td style="padding: 1rem;">
+                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+              
+              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <td style="padding: 1rem; font-weight: 600;">Fresh Orange Juice 1L</td>
+                <td style="padding: 1rem; color: var(--gray-500);">JUI-008</td>
+                <td style="padding: 1rem;">Beverages</td>
+                <td style="padding: 1rem; font-weight: 600;">₱95</td>
+                <td style="padding: 1rem;">78</td>
+                <td style="padding: 1rem;">
+                  <span class="list-item-badge success">Active</span>
+                </td>
+                <td style="padding: 1rem;">
+                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
+                    Edit
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - UNIPOS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar sidebar-glass" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="13" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <rect x="4" y="13" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
+              <path d="M13 15h7M13 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="sidebar-logo-text">UNIPOS</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav"></nav>
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar" id="user-avatar"><span id="user-initials"></span></div>
+          <div class="user-info">
+            <div class="user-name" id="user-name"></div>
+            <div class="user-role" id="user-role"></div>
+          </div>
+        </div>
+        <button class="btn-logout" id="logout-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          <span>Logout</span>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">Settings</h1>
+        <p class="page-subtitle">Configure system preferences</p>
+      </div>
+      
+      <div class="content-grid">
+        <div class="glass-card content-card">
+          <div class="card-header">
+            <h2 class="card-title">Store Information</h2>
+            <button class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; height: auto;">
+              Save Changes
+            </button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Store Name</label>
+              <input type="text" class="form-input glass-input" value="UNIPOS Store" style="padding-left: 0.75rem;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contact Email</label>
+              <input type="email" class="form-input glass-input" value="contact@unipos.com" style="padding-left: 0.75rem;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-input glass-input" value="+63 123 456 7890" style="padding-left: 0.75rem;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Address</label>
+              <textarea class="form-input glass-input" rows="3" style="padding: 0.75rem; resize: vertical;">123 Main Street, City, Province</textarea>
+            </div>
+          </div>
+        </div>
+        
+        <div class="glass-card content-card">
+          <div class="card-header">
+            <h2 class="card-title">System Preferences</h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="setting-1" class="form-checkbox" checked>
+              <label for="setting-1" class="checkbox-label">Enable email notifications</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="setting-2" class="form-checkbox" checked>
+              <label for="setting-2" class="checkbox-label">Low stock alerts</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="setting-3" class="form-checkbox">
+              <label for="setting-3" class="checkbox-label">Auto-backup data daily</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="setting-4" class="form-checkbox" checked>
+              <label for="setting-4" class="checkbox-label">Receipt printing enabled</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="setting-5" class="form-checkbox">
+              <label for="setting-5" class="checkbox-label">Dark mode</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="glass-card content-card">
+          <div class="card-header">
+            <h2 class="card-title">Security</h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <button class="btn btn-outline" style="width: auto;">
+              Change Password
+            </button>
+            <button class="btn btn-outline" style="width: auto;">
+              Two-Factor Authentication
+            </button>
+            <button class="btn btn-outline" style="width: auto;">
+              Session Management
+            </button>
+            <button class="btn btn-outline" style="width: auto;">
+              Activity Log
+            </button>
+          </div>
+        </div>
+        
+        <div class="glass-card content-card">
+          <div class="card-header">
+            <h2 class="card-title">Payment Settings</h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="payment-1" class="form-checkbox" checked>
+              <label for="payment-1" class="checkbox-label">Accept Cash</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="payment-2" class="form-checkbox" checked>
+              <label for="payment-2" class="checkbox-label">Accept Credit/Debit Cards</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="payment-3" class="form-checkbox" checked>
+              <label for="payment-3" class="checkbox-label">Accept GCash</label>
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="payment-4" class="form-checkbox">
+              <label for="payment-4" class="checkbox-label">Accept PayMaya</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="glass-card content-card">
+          <div class="card-header">
+            <h2 class="card-title">Receipt Settings</h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Receipt Header</label>
+              <input type="text" class="form-input glass-input" value="Thank you for shopping!" style="padding-left: 0.75rem;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Receipt Footer</label>
+              <input type="text" class="form-input glass-input" value="Please come again!" style="padding-left: 0.75rem;">
+            </div>
+            <div class="checkbox-wrapper">
+              <input type="checkbox" id="receipt-1" class="form-checkbox" checked>
+              <label for="receipt-1" class="checkbox-label">Print logo on receipt</label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="glass-card content-card">
+          <div class="card-header">
+            <h2 class="card-title">Data Management</h2>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <button class="btn btn-outline" style="width: auto;">
+              Export All Data
+            </button>
+            <button class="btn btn-outline" style="width: auto;">
+              Backup Database
+            </button>
+            <button class="btn btn-outline" style="width: auto;">
+              Clear Cache
+            </button>
+            <button class="btn btn-outline" style="width: auto; color: var(--danger); border-color: rgba(220, 53, 69, 0.3);">
+              Reset All Settings
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
