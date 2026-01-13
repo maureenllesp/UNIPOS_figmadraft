@@ -1,223 +1,378 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Refunds - UNIPOS</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="app-layout">
-    <aside class="sidebar sidebar-glass" id="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">
-          <div class="sidebar-logo-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-              <rect x="13" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-              <rect x="4" y="13" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-              <path d="M13 15h7M13 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="sidebar-logo-text">UNIPOS</span>
-        </div>
-      </div>
-      <nav class="sidebar-nav" id="sidebar-nav"></nav>
-      <div class="sidebar-footer">
-        <div class="user-profile">
-          <div class="user-avatar" id="user-avatar"><span id="user-initials"></span></div>
-          <div class="user-info">
-            <div class="user-name" id="user-name"></div>
-            <div class="user-role" id="user-role"></div>
-          </div>
-        </div>
-        <button class="btn-logout" id="logout-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-          <span>Logout</span>
-        </button>
-      </div>
-    </aside>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Refunds - UNIPOS</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="app-layout">
+			<aside class="sidebar sidebar-glass" id="sidebar">
+				<div class="sidebar-header">
+					<div class="sidebar-logo">
+						<div class="sidebar-logo-icon">
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+								<rect
+									x="4"
+									y="4"
+									width="7"
+									height="7"
+									rx="1"
+									stroke="currentColor"
+									stroke-width="2"
+								/>
+								<rect
+									x="13"
+									y="4"
+									width="7"
+									height="7"
+									rx="1"
+									stroke="currentColor"
+									stroke-width="2"
+								/>
+								<rect
+									x="4"
+									y="13"
+									width="7"
+									height="7"
+									rx="1"
+									stroke="currentColor"
+									stroke-width="2"
+								/>
+								<path
+									d="M13 15h7M13 18h7"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+								/>
+							</svg>
+						</div>
+						<span class="sidebar-logo-text">UNIPOS</span>
+					</div>
+				</div>
+				<nav class="sidebar-nav" id="sidebar-nav"></nav>
+				<div class="sidebar-footer">
+					<div class="user-profile">
+						<div class="user-avatar" id="user-avatar">
+							<span id="user-initials"></span>
+						</div>
+						<div class="user-info">
+							<div class="user-name" id="user-name"></div>
+							<div class="user-role" id="user-role"></div>
+						</div>
+					</div>
+					<button class="btn-logout" id="logout-btn">
+						<svg
+							width="20"
+							height="20"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+						>
+							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+							<polyline points="16 17 21 12 16 7" />
+							<line x1="21" y1="12" x2="9" y2="12" />
+						</svg>
+						<span>Logout</span>
+					</button>
+				</div>
+			</aside>
 
-    <main class="main-content">
-      <div class="page-header">
-        <h1 class="page-title">Refunds</h1>
-        <p class="page-subtitle">Manage customer refunds and returns</p>
-      </div>
-      
-      <div class="glass-card content-card">
-        <div class="card-header">
-          <h2 class="card-title">Refund Requests</h2>
-          <button class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; height: auto;">
-            Process Refund
-          </button>
-        </div>
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr style="border-bottom: 2px solid rgba(0,0,0,0.1);">
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Refund ID</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Transaction ID</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Date</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Amount</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Reason</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Status</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                <td style="padding: 1rem; font-weight: 600; color: var(--primary);">REF-0023</td>
-                <td style="padding: 1rem;">TXN-001230</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Jan 13, 2025</td>
-                <td style="padding: 1rem; font-weight: 600;">₱450</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Damaged product</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge warning">Pending</span>
-                </td>
-                <td style="padding: 1rem;">
-                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                    Process
-                  </button>
-                </td>
-              </tr>
-              
-              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                <td style="padding: 1rem; font-weight: 600; color: var(--primary);">REF-0022</td>
-                <td style="padding: 1rem;">TXN-001215</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Jan 12, 2025</td>
-                <td style="padding: 1rem; font-weight: 600;">₱890</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Wrong item</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge success">Completed</span>
-                </td>
-                <td style="padding: 1rem;">
-                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                    View
-                  </button>
-                </td>
-              </tr>
-              
-              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                <td style="padding: 1rem; font-weight: 600; color: var(--primary);">REF-0021</td>
-                <td style="padding: 1rem;">TXN-001198</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Jan 11, 2025</td>
-                <td style="padding: 1rem; font-weight: 600;">₱325</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Customer changed mind</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge success">Completed</span>
-                </td>
-                <td style="padding: 1rem;">
-                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                    View
-                  </button>
-                </td>
-              </tr>
-              
-              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                <td style="padding: 1rem; font-weight: 600; color: var(--primary);">REF-0020</td>
-                <td style="padding: 1rem;">TXN-001187</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Jan 10, 2025</td>
-                <td style="padding: 1rem; font-weight: 600;">₱1,250</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Expired product</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge danger">Rejected</span>
-                </td>
-                <td style="padding: 1rem;">
-                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                    View
-                  </button>
-                </td>
-              </tr>
-              
-              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                <td style="padding: 1rem; font-weight: 600; color: var(--primary);">REF-0019</td>
-                <td style="padding: 1rem;">TXN-001156</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Jan 9, 2025</td>
-                <td style="padding: 1rem; font-weight: 600;">₱560</td>
-                <td style="padding: 1rem; color: var(--gray-500);">Defective item</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge success">Completed</span>
-                </td>
-                <td style="padding: 1rem;">
-                  <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                    View
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      <div class="content-grid" style="margin-top: 2rem;">
-        <div class="glass-card content-card">
-          <div class="card-header">
-            <h2 class="card-title">Refund Statistics</h2>
-          </div>
-          <div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Total Refunds</div>
-                <div class="list-item-subtitle">This month</div>
-              </div>
-              <div class="list-item-value">15</div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Refund Amount</div>
-                <div class="list-item-subtitle">Total value</div>
-              </div>
-              <div class="list-item-value">₱8,950</div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Refund Rate</div>
-                <div class="list-item-subtitle">% of transactions</div>
-              </div>
-              <div class="list-item-value">1.2%</div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="glass-card content-card">
-          <div class="card-header">
-            <h2 class="card-title">Common Reasons</h2>
-          </div>
-          <div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Damaged/Defective</div>
-              </div>
-              <div class="list-item-value">40%</div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Wrong Item</div>
-              </div>
-              <div class="list-item-value">30%</div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Changed Mind</div>
-              </div>
-              <div class="list-item-value">20%</div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Other</div>
-              </div>
-              <div class="list-item-value">10%</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+			<main class="main-content">
+				<div class="page-header">
+					<h1 class="page-title">Refunds</h1>
+					<p class="page-subtitle">Manage customer refunds and returns</p>
+				</div>
 
-  <script src="app.js"></script>
-</body>
+				<div class="glass-card content-card">
+					<div class="card-header">
+						<h2 class="card-title">Refund Requests</h2>
+						<button
+							class="btn btn-primary"
+							style="width: auto; padding: 0.5rem 1rem; height: auto"
+						>
+							Process Refund
+						</button>
+					</div>
+					<div style="overflow-x: auto">
+						<table style="width: 100%; border-collapse: collapse">
+							<thead>
+								<tr style="border-bottom: 2px solid rgba(0, 0, 0, 0.1)">
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Refund ID
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Transaction ID
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Date
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Amount
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Reason
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Status
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Actions
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)">
+									<td
+										style="
+											padding: 1rem;
+											font-weight: 600;
+											color: var(--primary);
+										"
+									>
+										REF-0023
+									</td>
+									<td style="padding: 1rem">TXN-001230</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Jan 13, 2025
+									</td>
+									<td style="padding: 1rem; font-weight: 600">₱450</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Damaged product
+									</td>
+									<td style="padding: 1rem">
+										<span class="list-item-badge warning">Pending</span>
+									</td>
+									<td style="padding: 1rem">
+										<button
+											class="btn btn-outline"
+											style="
+												width: auto;
+												padding: 0.25rem 0.75rem;
+												height: auto;
+												font-size: 0.875rem;
+											"
+										>
+											Process
+										</button>
+									</td>
+								</tr>
+
+								<tr style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)">
+									<td
+										style="
+											padding: 1rem;
+											font-weight: 600;
+											color: var(--primary);
+										"
+									>
+										REF-0022
+									</td>
+									<td style="padding: 1rem">TXN-001215</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Jan 12, 2025
+									</td>
+									<td style="padding: 1rem; font-weight: 600">₱890</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Wrong item
+									</td>
+									<td style="padding: 1rem">
+										<span class="list-item-badge success">Completed</span>
+									</td>
+									<td style="padding: 1rem">
+										<button
+											class="btn btn-outline"
+											style="
+												width: auto;
+												padding: 0.25rem 0.75rem;
+												height: auto;
+												font-size: 0.875rem;
+											"
+										>
+											View
+										</button>
+									</td>
+								</tr>
+
+								<tr style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)">
+									<td
+										style="
+											padding: 1rem;
+											font-weight: 600;
+											color: var(--primary);
+										"
+									>
+										REF-0021
+									</td>
+									<td style="padding: 1rem">TXN-001198</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Jan 11, 2025
+									</td>
+									<td style="padding: 1rem; font-weight: 600">₱325</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Customer changed mind
+									</td>
+									<td style="padding: 1rem">
+										<span class="list-item-badge success">Completed</span>
+									</td>
+									<td style="padding: 1rem">
+										<button
+											class="btn btn-outline"
+											style="
+												width: auto;
+												padding: 0.25rem 0.75rem;
+												height: auto;
+												font-size: 0.875rem;
+											"
+										>
+											View
+										</button>
+									</td>
+								</tr>
+
+								<tr style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)">
+									<td
+										style="
+											padding: 1rem;
+											font-weight: 600;
+											color: var(--primary);
+										"
+									>
+										REF-0020
+									</td>
+									<td style="padding: 1rem">TXN-001187</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Jan 10, 2025
+									</td>
+									<td style="padding: 1rem; font-weight: 600">₱1,250</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Expired product
+									</td>
+									<td style="padding: 1rem">
+										<span class="list-item-badge danger">Rejected</span>
+									</td>
+									<td style="padding: 1rem">
+										<button
+											class="btn btn-outline"
+											style="
+												width: auto;
+												padding: 0.25rem 0.75rem;
+												height: auto;
+												font-size: 0.875rem;
+											"
+										>
+											View
+										</button>
+									</td>
+								</tr>
+
+								<tr style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)">
+									<td
+										style="
+											padding: 1rem;
+											font-weight: 600;
+											color: var(--primary);
+										"
+									>
+										REF-0019
+									</td>
+									<td style="padding: 1rem">TXN-001156</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Jan 9, 2025
+									</td>
+									<td style="padding: 1rem; font-weight: 600">₱560</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Defective item
+									</td>
+									<td style="padding: 1rem">
+										<span class="list-item-badge success">Completed</span>
+									</td>
+									<td style="padding: 1rem">
+										<button
+											class="btn btn-outline"
+											style="
+												width: auto;
+												padding: 0.25rem 0.75rem;
+												height: auto;
+												font-size: 0.875rem;
+											"
+										>
+											View
+										</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="content-grid" style="margin-top: 2rem">
+					<div class="glass-card content-card">
+						<div class="card-header">
+							<h2 class="card-title">Refund Statistics</h2>
+						</div>
+						<div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Total Refunds</div>
+									<div class="list-item-subtitle">This month</div>
+								</div>
+								<div class="list-item-value">15</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Refund Amount</div>
+									<div class="list-item-subtitle">Total value</div>
+								</div>
+								<div class="list-item-value">₱8,950</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Refund Rate</div>
+									<div class="list-item-subtitle">% of transactions</div>
+								</div>
+								<div class="list-item-value">1.2%</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="glass-card content-card">
+						<div class="card-header">
+							<h2 class="card-title">Common Reasons</h2>
+						</div>
+						<div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Damaged/Defective</div>
+								</div>
+								<div class="list-item-value">40%</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Wrong Item</div>
+								</div>
+								<div class="list-item-value">30%</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Changed Mind</div>
+								</div>
+								<div class="list-item-value">20%</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Other</div>
+								</div>
+								<div class="list-item-value">10%</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>
+
+		<script src="app.js"></script>
+	</body>
 </html>

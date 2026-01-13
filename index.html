@@ -1,116 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - UNIPOS</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <!-- Login Page -->
-  <div class="login-container">
-    <!-- Background Pattern -->
-    <div class="login-background">
-      <div class="blur-circle blur-circle-1"></div>
-      <div class="blur-circle blur-circle-2"></div>
-    </div>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Login - UNIPOS</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<!-- Login Page -->
+		<div class="login-container">
+			<!-- Background Pattern -->
+			<div class="login-background">
+				<div class="blur-circle blur-circle-1"></div>
+				<div class="blur-circle blur-circle-2"></div>
+			</div>
 
-    <div class="login-content">
-      <!-- Login Form -->
-      <div class="login-form-wrapper glass-card">
-        <!-- Logo -->
-        <div class="login-logo">
-          <div class="logo-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-              <rect x="13" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-              <rect x="4" y="13" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-              <path d="M13 15h7M13 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <div>
-            <h1 class="logo-title">UNIPOS</h1>
-            <p class="logo-subtitle">Point-of-sale system</p>
-          </div>
-        </div>
+			<div class="login-content">
+				<!-- Login Form -->
+				<div class="login-form-wrapper glass-card">
+					<!-- Logo -->
+					<div class="login-logo">
+						<div class="logo-icon">
+							<svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+								<rect
+									x="4"
+									y="4"
+									width="7"
+									height="7"
+									rx="1"
+									stroke="currentColor"
+									stroke-width="2"
+								/>
+								<rect
+									x="13"
+									y="4"
+									width="7"
+									height="7"
+									rx="1"
+									stroke="currentColor"
+									stroke-width="2"
+								/>
+								<rect
+									x="4"
+									y="13"
+									width="7"
+									height="7"
+									rx="1"
+									stroke="currentColor"
+									stroke-width="2"
+								/>
+								<path
+									d="M13 15h7M13 18h7"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+								/>
+							</svg>
+						</div>
+						<div>
+							<h1 class="logo-title">UNIPOS</h1>
+							<p class="logo-subtitle">Point-of-sale system</p>
+						</div>
+					</div>
 
-        <h2 class="form-title">LOGIN</h2>
+					<h2 class="form-title">LOGIN</h2>
 
-        <form id="login-form" class="login-form">
-          <!-- Username Field -->
-          <div class="form-group">
-            <label for="email" class="form-label">Username</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              <input 
-                type="email" 
-                id="email" 
-                class="form-input glass-input" 
-                placeholder="username" 
-                required
-              >
-            </div>
-          </div>
+					<form id="login-form" class="login-form">
+						<!-- Username Field -->
+						<div class="form-group">
+							<label for="email" class="form-label">Username</label>
+							<div class="input-wrapper">
+								<svg
+									class="input-icon"
+									width="20"
+									height="20"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+								>
+									<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+									<circle cx="12" cy="7" r="4" />
+								</svg>
+								<input
+									type="email"
+									id="email"
+									class="form-input glass-input"
+									placeholder="username"
+									required
+								/>
+							</div>
+						</div>
 
-          <!-- Password Field -->
-          <div class="form-group">
-            <label for="password" class="form-label">Password</label>
-            <div class="input-wrapper">
-              <svg class="input-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-              </svg>
-              <input 
-                type="password" 
-                id="password" 
-                class="form-input glass-input" 
-                placeholder="password" 
-                required
-              >
-              <button type="button" class="toggle-password" id="toggle-password">
-                <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                  <circle cx="12" cy="12" r="3"/>
-                </svg>
-              </button>
-            </div>
-          </div>
+						<!-- Password Field -->
+						<div class="form-group">
+							<label for="password" class="form-label">Password</label>
+							<div class="input-wrapper">
+								<svg
+									class="input-icon"
+									width="20"
+									height="20"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+								>
+									<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+									<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+								</svg>
+								<input
+									type="password"
+									id="password"
+									class="form-input glass-input"
+									placeholder="password"
+									required
+								/>
+								<button
+									type="button"
+									class="toggle-password"
+									id="toggle-password"
+								>
+									<svg
+										class="eye-icon"
+										width="20"
+										height="20"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+									>
+										<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+										<circle cx="12" cy="12" r="3" />
+									</svg>
+								</button>
+							</div>
+						</div>
 
-          <!-- Show Password Checkbox -->
-          <div class="checkbox-wrapper">
-            <input type="checkbox" id="show-password" class="form-checkbox">
-            <label for="show-password" class="checkbox-label">Show Password</label>
-          </div>
+						<!-- Show Password Checkbox -->
+						<div class="checkbox-wrapper">
+							<input type="checkbox" id="show-password" class="form-checkbox" />
+							<label for="show-password" class="checkbox-label"
+								>Show Password</label
+							>
+						</div>
 
-          <!-- Error Message -->
-          <div id="error-message" class="error-message" style="display: none;"></div>
+						<!-- Error Message -->
+						<div
+							id="error-message"
+							class="error-message"
+							style="display: none"
+						></div>
 
-          <!-- Login Button -->
-          <button type="submit" class="btn btn-primary" id="login-btn">
-            LOGIN
-          </button>
+						<!-- Login Button -->
+						<button type="submit" class="btn btn-primary" id="login-btn">
+							LOGIN
+						</button>
 
-          <!-- Quick Access Buttons -->
-          <button type="button" class="btn btn-outline" id="admin-quick-btn">
-            ADMIN QUICK ACCESS
-          </button>
+						<!-- Quick Access Buttons -->
+						<button type="button" class="btn btn-outline" id="admin-quick-btn">
+							ADMIN QUICK ACCESS
+						</button>
 
-          <!-- Sign Up Link -->
-          <p class="signup-text">
-            Don't have an account? 
-            <button type="button" class="link-btn">Sign up now!</button>
-          </p>
+						<!-- Sign Up Link -->
+						<p class="signup-text">
+							Don't have an account?
+							<button type="button" class="link-btn">Sign up now!</button>
+						</p>
 
-          <!-- Copyright -->
-          <p class="copyright">© 2025</p>
-        </form>
-      </div>
-    </div>
-  </div>
+						<!-- Copyright -->
+						<p class="copyright">© 2025</p>
+					</form>
+				</div>
+			</div>
+		</div>
 
-  <script src="app.js"></script>
-</body>
+		<script src="app.js"></script>
+	</body>
 </html>

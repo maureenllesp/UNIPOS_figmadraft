@@ -1,287 +1,556 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Management - UNIPOS</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="app-layout">
-    <aside class="sidebar sidebar-glass" id="sidebar">
-      <div class="sidebar-header">
-        <div class="sidebar-logo">
-          <div class="sidebar-logo-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect x="4" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-              <rect x="13" y="4" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-              <rect x="4" y="13" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/>
-              <path d="M13 15h7M13 18h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-          <span class="sidebar-logo-text">UNIPOS</span>
-        </div>
-      </div>
-      <nav class="sidebar-nav" id="sidebar-nav"></nav>
-      <div class="sidebar-footer">
-        <div class="user-profile">
-          <div class="user-avatar" id="user-avatar"><span id="user-initials"></span></div>
-          <div class="user-info">
-            <div class="user-name" id="user-name"></div>
-            <div class="user-role" id="user-role"></div>
-          </div>
-        </div>
-        <button class="btn-logout" id="logout-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-          <span>Logout</span>
-        </button>
-      </div>
-    </aside>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>User Management - UNIPOS</title>
+		<link rel="stylesheet" href="styles.css" />
+	</head>
+	<body>
+		<div class="app-layout">
+			<aside class="sidebar sidebar-glass" id="sidebar">
+				<div class="sidebar-header">
+					<div class="sidebar-logo">
+						<div class="sidebar-logo-icon">
+							<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+								<rect
+									x="4"
+									y="4"
+									width="7"
+									height="7"
+									rx="1"
+									stroke="currentColor"
+									stroke-width="2"
+								/>
+								<rect
+									x="13"
+									y="4"
+									width="7"
+									height="7"
+									rx="1"
+									stroke="currentColor"
+									stroke-width="2"
+								/>
+								<rect
+									x="4"
+									y="13"
+									width="7"
+									height="7"
+									rx="1"
+									stroke="currentColor"
+									stroke-width="2"
+								/>
+								<path
+									d="M13 15h7M13 18h7"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+								/>
+							</svg>
+						</div>
+						<span class="sidebar-logo-text">UNIPOS</span>
+					</div>
+				</div>
+				<nav class="sidebar-nav" id="sidebar-nav"></nav>
+				<div class="sidebar-footer">
+					<div class="user-profile">
+						<div class="user-avatar" id="user-avatar">
+							<span id="user-initials"></span>
+						</div>
+						<div class="user-info">
+							<div class="user-name" id="user-name"></div>
+							<div class="user-role" id="user-role"></div>
+						</div>
+					</div>
+					<button class="btn-logout" id="logout-btn">
+						<svg
+							width="20"
+							height="20"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+						>
+							<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+							<polyline points="16 17 21 12 16 7" />
+							<line x1="21" y1="12" x2="9" y2="12" />
+						</svg>
+						<span>Logout</span>
+					</button>
+				</div>
+			</aside>
 
-    <main class="main-content">
-      <div class="page-header">
-        <h1 class="page-title">User Management</h1>
-        <p class="page-subtitle">Manage system users and permissions</p>
-      </div>
-      
-      <div class="glass-card content-card">
-        <div class="card-header">
-          <h2 class="card-title">System Users</h2>
-          <button class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem; height: auto;">
-            Add User
-          </button>
-        </div>
-        <div style="overflow-x: auto;">
-          <table style="width: 100%; border-collapse: collapse;">
-            <thead>
-              <tr style="border-bottom: 2px solid rgba(0,0,0,0.1);">
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Name</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Email</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Role</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Created</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Status</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                <td style="padding: 1rem;">
-                  <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 2rem; height: 2rem; border-radius: 50%; background: linear-gradient(135deg, var(--primary-light), var(--primary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">
-                      AG
-                    </div>
-                    <div style="font-weight: 600;">Ashley Graham</div>
-                  </div>
-                </td>
-                <td style="padding: 1rem; color: var(--gray-500);">cashier@unipos.com</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge" style="background: rgba(91, 141, 184, 0.1); color: var(--primary);">Cashier</span>
-                </td>
-                <td style="padding: 1rem; color: var(--gray-500);">Jan 1, 2025</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge success">Active</span>
-                </td>
-                <td style="padding: 1rem;">
-                  <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                      Edit
-                    </button>
-                    <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem; color: var(--danger); border-color: rgba(220, 53, 69, 0.3);">
-                      Disable
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              
-              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                <td style="padding: 1rem;">
-                  <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 2rem; height: 2rem; border-radius: 50%; background: linear-gradient(135deg, var(--success), #28a745); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">
-                      JS
-                    </div>
-                    <div style="font-weight: 600;">John Smith</div>
-                  </div>
-                </td>
-                <td style="padding: 1rem; color: var(--gray-500);">admin@unipos.com</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge" style="background: rgba(40, 167, 69, 0.1); color: var(--success);">Admin</span>
-                </td>
-                <td style="padding: 1rem; color: var(--gray-500);">Jan 1, 2025</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge success">Active</span>
-                </td>
-                <td style="padding: 1rem;">
-                  <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                      Edit
-                    </button>
-                    <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem; color: var(--danger); border-color: rgba(220, 53, 69, 0.3);">
-                      Disable
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              
-              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                <td style="padding: 1rem;">
-                  <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 2rem; height: 2rem; border-radius: 50%; background: linear-gradient(135deg, var(--warning), #ffc107); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">
-                      SJ
-                    </div>
-                    <div style="font-weight: 600;">Sarah Johnson</div>
-                  </div>
-                </td>
-                <td style="padding: 1rem; color: var(--gray-500);">owner@unipos.com</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge" style="background: rgba(255, 193, 7, 0.1); color: var(--warning);">Owner</span>
-                </td>
-                <td style="padding: 1rem; color: var(--gray-500);">Jan 1, 2025</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge success">Active</span>
-                </td>
-                <td style="padding: 1rem;">
-                  <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                      Edit
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              
-              <tr style="border-bottom: 1px solid rgba(0,0,0,0.05);">
-                <td style="padding: 1rem;">
-                  <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 2rem; height: 2rem; border-radius: 50%; background: linear-gradient(135deg, var(--primary-light), var(--primary)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">
-                      MB
-                    </div>
-                    <div style="font-weight: 600;">Maria Brown</div>
-                  </div>
-                </td>
-                <td style="padding: 1rem; color: var(--gray-500);">maria.brown@unipos.com</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge" style="background: rgba(91, 141, 184, 0.1); color: var(--primary);">Cashier</span>
-                </td>
-                <td style="padding: 1rem; color: var(--gray-500);">Jan 5, 2025</td>
-                <td style="padding: 1rem;">
-                  <span class="list-item-badge warning">Inactive</span>
-                </td>
-                <td style="padding: 1rem;">
-                  <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                      Edit
-                    </button>
-                    <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem; color: var(--success); border-color: rgba(40, 167, 69, 0.3);">
-                      Activate
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      <div class="content-grid" style="margin-top: 2rem;">
-        <div class="glass-card content-card">
-          <div class="card-header">
-            <h2 class="card-title">Role Permissions</h2>
-          </div>
-          <div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Cashier</div>
-                <div class="list-item-subtitle">Dashboard, Products, Reports</div>
-              </div>
-              <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                Edit
-              </button>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Admin</div>
-                <div class="list-item-subtitle">Full access except AI Insights</div>
-              </div>
-              <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                Edit
-              </button>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Owner</div>
-                <div class="list-item-subtitle">Dashboard, Reports, Sales, AI Insights</div>
-              </div>
-              <button class="btn btn-outline" style="width: auto; padding: 0.25rem 0.75rem; height: auto; font-size: 0.875rem;">
-                Edit
-              </button>
-            </div>
-          </div>
-        </div>
-        
-        <div class="glass-card content-card">
-          <div class="card-header">
-            <h2 class="card-title">User Statistics</h2>
-          </div>
-          <div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Total Users</div>
-              </div>
-              <div class="list-item-value">4</div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Active Users</div>
-              </div>
-              <div class="list-item-value">3</div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Administrators</div>
-              </div>
-              <div class="list-item-value">2</div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Cashiers</div>
-              </div>
-              <div class="list-item-value">2</div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="glass-card content-card">
-          <div class="card-header">
-            <h2 class="card-title">Recent Activity</h2>
-          </div>
-          <div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">John Smith logged in</div>
-                <div class="list-item-subtitle">2 minutes ago</div>
-              </div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Ashley Graham processed transaction</div>
-                <div class="list-item-subtitle">15 minutes ago</div>
-              </div>
-            </div>
-            <div class="list-item">
-              <div class="list-item-info">
-                <div class="list-item-title">Sarah Johnson updated settings</div>
-                <div class="list-item-subtitle">1 hour ago</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </main>
-  </div>
+			<main class="main-content">
+				<div class="page-header">
+					<h1 class="page-title">User Management</h1>
+					<p class="page-subtitle">Manage system users and permissions</p>
+				</div>
 
-  <script src="app.js"></script>
-</body>
+				<div class="glass-card content-card">
+					<div class="card-header">
+						<h2 class="card-title">System Users</h2>
+						<button
+							class="btn btn-primary"
+							style="width: auto; padding: 0.5rem 1rem; height: auto"
+						>
+							Add User
+						</button>
+					</div>
+					<div style="overflow-x: auto">
+						<table style="width: 100%; border-collapse: collapse">
+							<thead>
+								<tr style="border-bottom: 2px solid rgba(0, 0, 0, 0.1)">
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Name
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Email
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Role
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Created
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Status
+									</th>
+									<th style="padding: 1rem; text-align: left; font-weight: 600">
+										Actions
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)">
+									<td style="padding: 1rem">
+										<div
+											style="display: flex; align-items: center; gap: 0.75rem"
+										>
+											<div
+												style="
+													width: 2rem;
+													height: 2rem;
+													border-radius: 50%;
+													background: linear-gradient(
+														135deg,
+														var(--primary-light),
+														var(--primary)
+													);
+													display: flex;
+													align-items: center;
+													justify-content: center;
+													color: white;
+													font-weight: 600;
+													font-size: 0.875rem;
+												"
+											>
+												AG
+											</div>
+											<div style="font-weight: 600">Ashley Graham</div>
+										</div>
+									</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										cashier@unipos.com
+									</td>
+									<td style="padding: 1rem">
+										<span
+											class="list-item-badge"
+											style="
+												background: rgba(91, 141, 184, 0.1);
+												color: var(--primary);
+											"
+											>Cashier</span
+										>
+									</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Jan 1, 2025
+									</td>
+									<td style="padding: 1rem">
+										<span class="list-item-badge success">Active</span>
+									</td>
+									<td style="padding: 1rem">
+										<div style="display: flex; gap: 0.5rem">
+											<button
+												class="btn btn-outline"
+												style="
+													width: auto;
+													padding: 0.25rem 0.75rem;
+													height: auto;
+													font-size: 0.875rem;
+												"
+											>
+												Edit
+											</button>
+											<button
+												class="btn btn-outline"
+												style="
+													width: auto;
+													padding: 0.25rem 0.75rem;
+													height: auto;
+													font-size: 0.875rem;
+													color: var(--danger);
+													border-color: rgba(220, 53, 69, 0.3);
+												"
+											>
+												Disable
+											</button>
+										</div>
+									</td>
+								</tr>
+
+								<tr style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)">
+									<td style="padding: 1rem">
+										<div
+											style="display: flex; align-items: center; gap: 0.75rem"
+										>
+											<div
+												style="
+													width: 2rem;
+													height: 2rem;
+													border-radius: 50%;
+													background: linear-gradient(
+														135deg,
+														var(--success),
+														#28a745
+													);
+													display: flex;
+													align-items: center;
+													justify-content: center;
+													color: white;
+													font-weight: 600;
+													font-size: 0.875rem;
+												"
+											>
+												JS
+											</div>
+											<div style="font-weight: 600">John Smith</div>
+										</div>
+									</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										admin@unipos.com
+									</td>
+									<td style="padding: 1rem">
+										<span
+											class="list-item-badge"
+											style="
+												background: rgba(40, 167, 69, 0.1);
+												color: var(--success);
+											"
+											>Admin</span
+										>
+									</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Jan 1, 2025
+									</td>
+									<td style="padding: 1rem">
+										<span class="list-item-badge success">Active</span>
+									</td>
+									<td style="padding: 1rem">
+										<div style="display: flex; gap: 0.5rem">
+											<button
+												class="btn btn-outline"
+												style="
+													width: auto;
+													padding: 0.25rem 0.75rem;
+													height: auto;
+													font-size: 0.875rem;
+												"
+											>
+												Edit
+											</button>
+											<button
+												class="btn btn-outline"
+												style="
+													width: auto;
+													padding: 0.25rem 0.75rem;
+													height: auto;
+													font-size: 0.875rem;
+													color: var(--danger);
+													border-color: rgba(220, 53, 69, 0.3);
+												"
+											>
+												Disable
+											</button>
+										</div>
+									</td>
+								</tr>
+
+								<tr style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)">
+									<td style="padding: 1rem">
+										<div
+											style="display: flex; align-items: center; gap: 0.75rem"
+										>
+											<div
+												style="
+													width: 2rem;
+													height: 2rem;
+													border-radius: 50%;
+													background: linear-gradient(
+														135deg,
+														var(--warning),
+														#ffc107
+													);
+													display: flex;
+													align-items: center;
+													justify-content: center;
+													color: white;
+													font-weight: 600;
+													font-size: 0.875rem;
+												"
+											>
+												SJ
+											</div>
+											<div style="font-weight: 600">Sarah Johnson</div>
+										</div>
+									</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										owner@unipos.com
+									</td>
+									<td style="padding: 1rem">
+										<span
+											class="list-item-badge"
+											style="
+												background: rgba(255, 193, 7, 0.1);
+												color: var(--warning);
+											"
+											>Owner</span
+										>
+									</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Jan 1, 2025
+									</td>
+									<td style="padding: 1rem">
+										<span class="list-item-badge success">Active</span>
+									</td>
+									<td style="padding: 1rem">
+										<div style="display: flex; gap: 0.5rem">
+											<button
+												class="btn btn-outline"
+												style="
+													width: auto;
+													padding: 0.25rem 0.75rem;
+													height: auto;
+													font-size: 0.875rem;
+												"
+											>
+												Edit
+											</button>
+										</div>
+									</td>
+								</tr>
+
+								<tr style="border-bottom: 1px solid rgba(0, 0, 0, 0.05)">
+									<td style="padding: 1rem">
+										<div
+											style="display: flex; align-items: center; gap: 0.75rem"
+										>
+											<div
+												style="
+													width: 2rem;
+													height: 2rem;
+													border-radius: 50%;
+													background: linear-gradient(
+														135deg,
+														var(--primary-light),
+														var(--primary)
+													);
+													display: flex;
+													align-items: center;
+													justify-content: center;
+													color: white;
+													font-weight: 600;
+													font-size: 0.875rem;
+												"
+											>
+												MB
+											</div>
+											<div style="font-weight: 600">Maria Brown</div>
+										</div>
+									</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										maria.brown@unipos.com
+									</td>
+									<td style="padding: 1rem">
+										<span
+											class="list-item-badge"
+											style="
+												background: rgba(91, 141, 184, 0.1);
+												color: var(--primary);
+											"
+											>Cashier</span
+										>
+									</td>
+									<td style="padding: 1rem; color: var(--gray-500)">
+										Jan 5, 2025
+									</td>
+									<td style="padding: 1rem">
+										<span class="list-item-badge warning">Inactive</span>
+									</td>
+									<td style="padding: 1rem">
+										<div style="display: flex; gap: 0.5rem">
+											<button
+												class="btn btn-outline"
+												style="
+													width: auto;
+													padding: 0.25rem 0.75rem;
+													height: auto;
+													font-size: 0.875rem;
+												"
+											>
+												Edit
+											</button>
+											<button
+												class="btn btn-outline"
+												style="
+													width: auto;
+													padding: 0.25rem 0.75rem;
+													height: auto;
+													font-size: 0.875rem;
+													color: var(--success);
+													border-color: rgba(40, 167, 69, 0.3);
+												"
+											>
+												Activate
+											</button>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="content-grid" style="margin-top: 2rem">
+					<div class="glass-card content-card">
+						<div class="card-header">
+							<h2 class="card-title">Role Permissions</h2>
+						</div>
+						<div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Cashier</div>
+									<div class="list-item-subtitle">
+										Dashboard, Products, Reports
+									</div>
+								</div>
+								<button
+									class="btn btn-outline"
+									style="
+										width: auto;
+										padding: 0.25rem 0.75rem;
+										height: auto;
+										font-size: 0.875rem;
+									"
+								>
+									Edit
+								</button>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Admin</div>
+									<div class="list-item-subtitle">
+										Full access except AI Insights
+									</div>
+								</div>
+								<button
+									class="btn btn-outline"
+									style="
+										width: auto;
+										padding: 0.25rem 0.75rem;
+										height: auto;
+										font-size: 0.875rem;
+									"
+								>
+									Edit
+								</button>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Owner</div>
+									<div class="list-item-subtitle">
+										Dashboard, Reports, Sales, AI Insights
+									</div>
+								</div>
+								<button
+									class="btn btn-outline"
+									style="
+										width: auto;
+										padding: 0.25rem 0.75rem;
+										height: auto;
+										font-size: 0.875rem;
+									"
+								>
+									Edit
+								</button>
+							</div>
+						</div>
+					</div>
+
+					<div class="glass-card content-card">
+						<div class="card-header">
+							<h2 class="card-title">User Statistics</h2>
+						</div>
+						<div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Total Users</div>
+								</div>
+								<div class="list-item-value">4</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Active Users</div>
+								</div>
+								<div class="list-item-value">3</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Administrators</div>
+								</div>
+								<div class="list-item-value">2</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">Cashiers</div>
+								</div>
+								<div class="list-item-value">2</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="glass-card content-card">
+						<div class="card-header">
+							<h2 class="card-title">Recent Activity</h2>
+						</div>
+						<div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">John Smith logged in</div>
+									<div class="list-item-subtitle">2 minutes ago</div>
+								</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">
+										Ashley Graham processed transaction
+									</div>
+									<div class="list-item-subtitle">15 minutes ago</div>
+								</div>
+							</div>
+							<div class="list-item">
+								<div class="list-item-info">
+									<div class="list-item-title">
+										Sarah Johnson updated settings
+									</div>
+									<div class="list-item-subtitle">1 hour ago</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>
+
+		<script src="app.js"></script>
+	</body>
 </html>
