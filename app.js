@@ -350,3 +350,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		initAppPage();
 	}
 });
+
+
+
