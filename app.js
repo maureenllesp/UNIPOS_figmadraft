@@ -1892,3 +1892,644 @@ setTimeout(closeAfterPrint, 1500);
 		wireUpSettingsPage();
 	}
 })();
+
+
+//////
+//TRANSACTIONS
+//////
+
+
+(function () {
+	// ---------- Helpers ----------
+	function $(sel, root = document) {
+		return root.querySelector(sel);
+	}
+	function $all(sel, root = document) {
+		return Array.from(root.querySelectorAll(sel));
+	}
+	function textEq(el, txt) {
+		return (el?.textContent || "").trim().toLowerCase() === txt.trim().toLowerCase();
+	}
+	function findButtonByText(txt) {
+		return $all("button.btn").find((b) => textEq(b, txt));
+	}
+	function downloadFile(filename, mimeType, content) {
+		const blob = new Blob([content], { type: mimeType });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		a.remove();
+		setTimeout(() => URL.revokeObjectURL(url), 500);
+	}
+	function nowStamp() {
+		const d = new Date();
+		return d.toISOString().slice(0, 10);
+	}
+	function escapeHtml(str) {
+		return String(str ?? "")
+			.replaceAll("&", "&amp;")
+			.replaceAll("<", "&lt;")
+			.replaceAll(">", "&gt;")
+			.replaceAll('"', "&quot;")
+			.replaceAll("'", "&#039;");
+	}
+
+	// ---------- ISO Week helpers ----------
+	// Returns ISO week-year + ISO week number (1-53)
+	function isoWeekInfo(date) {
+		const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+		const dayNum = d.getUTCDay() || 7; // 1..7 (Mon..Sun)
+		d.setUTCDate(d.getUTCDate() + 4 - dayNum); // nearest Thu
+		const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+		const weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+		return { isoYear: d.getUTCFullYear(), isoWeek: weekNo };
+	}
+
+	function parseTransactionDate(s) {
+		// Your UI sample: "Jan 13, 2025 10:45 AM"
+		const d = new Date(s);
+		return isNaN(d.getTime()) ? null : d;
+	}
+
+	// ---------- Modal (reuse if exists; else create) ----------
+	let overlay = document.getElementById("unipos-modal-overlay") || null;
+
+	function ensureModal() {
+		if (overlay) return overlay;
+
+		overlay = document.createElement("div");
+		overlay.id = "unipos-modal-overlay";
+		overlay.style.position = "fixed";
+		overlay.style.inset = "0";
+		overlay.style.zIndex = "9999";
+		overlay.style.display = "none";
+		overlay.style.alignItems = "center";
+		overlay.style.justifyContent = "center";
+		overlay.style.padding = "1rem";
+		overlay.style.background = "rgba(15, 23, 42, 0.35)";
+		overlay.style.backdropFilter = "blur(10px)";
+
+		const modal = document.createElement("div");
+		modal.className = "glass-card";
+		modal.style.width = "min(760px, 100%)";
+		modal.style.borderRadius = "16px";
+		modal.style.overflow = "hidden";
+		modal.style.boxShadow = "0 20px 60px rgba(0,0,0,0.25)";
+
+		const header = document.createElement("div");
+		header.style.display = "flex";
+		header.style.alignItems = "center";
+		header.style.justifyContent = "space-between";
+		header.style.padding = "1rem 1.25rem";
+		header.style.borderBottom = "1px solid rgba(0,0,0,0.06)";
+
+		const title = document.createElement("div");
+		title.style.fontWeight = "800";
+		title.style.fontSize = "1.1rem";
+		title.textContent = "Export";
+
+		const closeBtn = document.createElement("button");
+		closeBtn.className = "btn btn-outline";
+		closeBtn.type = "button";
+		closeBtn.textContent = "Close";
+		closeBtn.style.width = "auto";
+		closeBtn.style.padding = "0.4rem 0.8rem";
+		closeBtn.style.height = "auto";
+		closeBtn.style.fontSize = "0.875rem";
+
+		header.appendChild(title);
+		header.appendChild(closeBtn);
+
+		const body = document.createElement("div");
+		body.style.padding = "1.25rem";
+
+		modal.appendChild(header);
+		modal.appendChild(body);
+		overlay.appendChild(modal);
+		document.body.appendChild(overlay);
+
+		function closeModal() {
+			overlay.style.display = "none";
+			body.innerHTML = "";
+		}
+
+		closeBtn.addEventListener("click", closeModal);
+		overlay.addEventListener("click", (e) => {
+			if (e.target === overlay) closeModal();
+		});
+		document.addEventListener("keydown", (e) => {
+			if (overlay.style.display !== "none" && e.key === "Escape") closeModal();
+		});
+
+		overlay._refs = { title, body, closeModal };
+		return overlay;
+	}
+
+	function openModal(modalTitle, contentNode) {
+		const o = ensureModal();
+		o._refs.title.textContent = modalTitle;
+		o._refs.body.innerHTML = "";
+		o._refs.body.appendChild(contentNode);
+		o.style.display = "flex";
+	}
+
+	// ---------- Read transactions from table ----------
+	function getTransactionRows() {
+		const tbody = document.querySelector("table tbody");
+		if (!tbody) return [];
+		const trs = $all("tr", tbody);
+
+		return trs.map((tr) => {
+			const tds = $all("td", tr);
+			return {
+				id: (tds[0]?.textContent || "").trim(),
+				dt: (tds[1]?.textContent || "").trim(),
+				items: (tds[2]?.textContent || "").trim(),
+				total: (tds[3]?.textContent || "").trim(),
+				payment: (tds[4]?.textContent || "").trim(),
+				cashier: (tds[5]?.textContent || "").trim(),
+			};
+		});
+	}
+
+	// ---------- Filters ----------
+	function filterWeekly(rows, year, week) {
+		return rows.filter((r) => {
+			const d = parseTransactionDate(r.dt);
+			if (!d) return true;
+			const info = isoWeekInfo(d);
+			return info.isoYear === Number(year) && info.isoWeek === Number(week);
+		});
+	}
+	function filterMonthly(rows, year, monthIndex0) {
+		return rows.filter((r) => {
+			const d = parseTransactionDate(r.dt);
+			if (!d) return true;
+			return d.getFullYear() === Number(year) && d.getMonth() === Number(monthIndex0);
+		});
+	}
+	function filterYearly(rows, year) {
+		return rows.filter((r) => {
+			const d = parseTransactionDate(r.dt);
+			if (!d) return true;
+			return d.getFullYear() === Number(year);
+		});
+	}
+
+	// ---------- Export Excel (.xls HTML table) ----------
+	function exportTransactionsExcel(rows, label) {
+		const stamp = nowStamp();
+		const xls = `<!doctype html>
+<html>
+<head><meta charset="utf-8"/></head>
+<body>
+  <table border="1" cellpadding="6" cellspacing="0">
+    <tr><th colspan="6">Transactions (${escapeHtml(label)})</th></tr>
+    <tr>
+      <th>Transaction ID</th><th>Date & Time</th><th>Items</th>
+      <th>Total</th><th>Payment</th><th>Cashier</th>
+    </tr>
+    ${rows
+			.map(
+				(r) => `<tr>
+        <td>${escapeHtml(r.id)}</td>
+        <td>${escapeHtml(r.dt)}</td>
+        <td>${escapeHtml(r.items)}</td>
+        <td>${escapeHtml(r.total)}</td>
+        <td>${escapeHtml(r.payment)}</td>
+        <td>${escapeHtml(r.cashier)}</td>
+      </tr>`
+			)
+			.join("")}
+  </table>
+</body>
+</html>`;
+
+		downloadFile(`Transactions_${label}_${stamp}.xls`, "application/vnd.ms-excel", xls);
+	}
+
+	// ---------- Export PDF (print view) ----------
+	function openTransactionsPDFPrint(rows, label) {
+		const now = new Date();
+
+		const html = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Transactions (${escapeHtml(label)})</title>
+<style>
+  body{font-family:Arial, sans-serif; padding:24px;}
+  h1{margin:0 0 10px;}
+  .muted{color:#555; margin:0 0 18px;}
+  table{width:100%; border-collapse:collapse;}
+  th,td{border:1px solid #ddd; padding:10px; text-align:left; font-size:12px;}
+  th{background:#f6f6f6;}
+</style>
+</head>
+<body>
+  <h1>Transactions (${escapeHtml(label)})</h1>
+  <p class="muted">Generated: ${now.toLocaleString()}</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Transaction ID</th><th>Date & Time</th><th>Items</th>
+        <th>Total</th><th>Payment</th><th>Cashier</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rows
+			.map(
+				(r) => `<tr>
+          <td>${escapeHtml(r.id)}</td>
+          <td>${escapeHtml(r.dt)}</td>
+          <td>${escapeHtml(r.items)}</td>
+          <td>${escapeHtml(r.total)}</td>
+          <td>${escapeHtml(r.payment)}</td>
+          <td>${escapeHtml(r.cashier)}</td>
+        </tr>`
+			)
+			.join("")}
+    </tbody>
+  </table>
+  <script>
+    window.onload = () => window.print();
+  </script>
+</body>
+</html>`;
+
+		const w = window.open("", "_blank");
+
+		// Close print tab after print/cancel so user returns to Transactions page
+		const closeAfterPrint = () => {
+			try { w.close(); } catch (e) {}
+		};
+		w.onafterprint = closeAfterPrint;
+		setTimeout(closeAfterPrint, 2000);
+
+		w.document.open();
+		w.document.write(html);
+		w.document.close();
+	}
+
+	// ---------- View Single Transaction (printable receipt) ----------
+	function openSingleTransactionPrint(rowData) {
+		const now = new Date();
+
+		const html = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>${escapeHtml(rowData.id)}</title>
+<style>
+  body{font-family:Arial, sans-serif; padding:24px;}
+  h1{margin:0 0 10px;}
+  .muted{color:#555; margin:0 0 18px;}
+  .card{border:1px solid #ddd; border-radius:10px; padding:14px;}
+  .grid{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
+  .label{color:#555; font-size:12px; margin-bottom:4px;}
+  .value{font-weight:800;}
+</style>
+</head>
+<body>
+  <h1>Transaction Receipt</h1>
+  <p class="muted">Print-ready view • Generated: ${now.toLocaleString()}</p>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <div class="label">Transaction ID</div>
+        <div class="value">${escapeHtml(rowData.id)}</div>
+      </div>
+      <div>
+        <div class="label">Date & Time</div>
+        <div class="value">${escapeHtml(rowData.dt)}</div>
+      </div>
+      <div>
+        <div class="label">Items</div>
+        <div class="value">${escapeHtml(rowData.items)}</div>
+      </div>
+      <div>
+        <div class="label">Total</div>
+        <div class="value">${escapeHtml(rowData.total)}</div>
+      </div>
+      <div>
+        <div class="label">Payment</div>
+        <div class="value">${escapeHtml(rowData.payment)}</div>
+      </div>
+      <div>
+        <div class="label">Cashier</div>
+        <div class="value">${escapeHtml(rowData.cashier)}</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = () => window.print();
+  </script>
+</body>
+</html>`;
+
+		const w = window.open("", "_blank");
+		const closeAfterPrint = () => {
+			try { w.close(); } catch (e) {}
+		};
+		w.onafterprint = closeAfterPrint;
+		setTimeout(closeAfterPrint, 2000);
+
+		w.document.open();
+		w.document.write(html);
+		w.document.close();
+	}
+
+	// ---------- UI helpers ----------
+	function field(labelText, inputEl) {
+		const wrap = document.createElement("div");
+		wrap.style.display = "flex";
+		wrap.style.flexDirection = "column";
+		wrap.style.gap = "0.35rem";
+
+		const label = document.createElement("label");
+		label.textContent = labelText;
+		label.style.fontSize = "0.875rem";
+		label.style.fontWeight = "700";
+		label.style.opacity = "0.9";
+
+		inputEl.style.width = "100%";
+		inputEl.style.padding = "0.75rem 0.85rem";
+		inputEl.style.borderRadius = "12px";
+		inputEl.style.border = "1px solid rgba(0,0,0,0.08)";
+		inputEl.style.outline = "none";
+		inputEl.style.background = "rgba(255,255,255,0.65)";
+		inputEl.style.backdropFilter = "blur(8px)";
+
+		wrap.appendChild(label);
+		wrap.appendChild(inputEl);
+		return wrap;
+	}
+
+	function makeSelect(options, value) {
+		const sel = document.createElement("select");
+		options.forEach((o) => {
+			const opt = document.createElement("option");
+			opt.value = String(o.value);
+			opt.textContent = o.label;
+			sel.appendChild(opt);
+		});
+		sel.value = String(value);
+		return sel;
+	}
+
+	function setSelectOptions(selectEl, options, fallbackValue) {
+		selectEl.innerHTML = "";
+		options.forEach((o) => {
+			const opt = document.createElement("option");
+			opt.value = String(o.value);
+			opt.textContent = o.label;
+			selectEl.appendChild(opt);
+		});
+		if (options.length) {
+			selectEl.value = String(fallbackValue ?? options[0].value);
+		}
+	}
+
+	// ---------- Export Modal (FLEXIBLE) ----------
+	function openExportModal() {
+		const container = document.createElement("div");
+		container.style.display = "flex";
+		container.style.flexDirection = "column";
+		container.style.gap = "0.9rem";
+
+		const card = document.createElement("div");
+		card.style.padding = "1rem";
+		card.style.borderRadius = "14px";
+		card.style.border = "1px solid rgba(0,0,0,0.08)";
+		card.style.background = "rgba(255,255,255,0.55)";
+		card.style.backdropFilter = "blur(10px)";
+
+		const title = document.createElement("div");
+		title.style.fontWeight = "900";
+		title.style.fontSize = "1.05rem";
+		title.textContent = "Export Transactions";
+
+		const desc = document.createElement("div");
+		desc.style.marginTop = "0.35rem";
+		desc.style.opacity = "0.85";
+		desc.textContent =
+			"Choose Weekly/Monthly/Yearly and select the year (and week/month). Exports Excel + opens printable PDF.";
+
+		card.appendChild(title);
+		card.appendChild(desc);
+
+		const rows = getTransactionRows();
+
+		// months list
+		const months = [
+			"January","February","March","April","May","June",
+			"July","August","September","October","November","December"
+		];
+
+		// Flexible years: years from data + currentYear-5..currentYear+1
+		const currentYear = new Date().getFullYear();
+		const yearsInData = Array.from(
+			new Set(
+				rows
+					.map((r) => {
+						const d = parseTransactionDate(r.dt);
+						return d ? d.getFullYear() : null;
+					})
+					.filter(Boolean)
+			)
+		).sort((a, b) => a - b);
+
+		const yearSet = new Set(yearsInData);
+		for (let y = currentYear - 5; y <= currentYear + 1; y++) yearSet.add(y);
+		const yearOptions = Array.from(yearSet).sort((a, b) => a - b);
+
+		const rangeSelect = makeSelect(
+			[
+				{ label: "Weekly", value: "weekly" },
+				{ label: "Monthly", value: "monthly" },
+				{ label: "Yearly", value: "yearly" },
+			],
+			"weekly"
+		);
+
+		const yearSelect = makeSelect(
+			yearOptions.map((y) => ({ label: String(y), value: y })),
+			(yearsInData[yearsInData.length - 1] ?? currentYear)
+		);
+
+		// Week/Month selects are dynamic
+		const weekSelect = document.createElement("select");
+		const monthSelect = document.createElement("select");
+
+		const grid = document.createElement("div");
+		grid.style.display = "grid";
+		grid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+		grid.style.gap = "0.9rem";
+		grid.style.marginTop = "0.9rem";
+
+		const weekWrap = field("Week", weekSelect);
+		const monthWrap = field("Month", monthSelect);
+
+		grid.appendChild(field("Range", rangeSelect));
+		grid.appendChild(field("Year", yearSelect));
+		grid.appendChild(weekWrap);
+		grid.appendChild(monthWrap);
+
+		function computeAvailableForYear(selectedYear) {
+			const weeks = new Set();
+			const monthsSet = new Set();
+
+			rows.forEach((r) => {
+				const d = parseTransactionDate(r.dt);
+				if (!d) return;
+
+				// month options (normal year)
+				if (d.getFullYear() === Number(selectedYear)) {
+					monthsSet.add(d.getMonth());
+				}
+
+				// week options (ISO week-year)
+				const info = isoWeekInfo(d);
+				if (info.isoYear === Number(selectedYear)) {
+					weeks.add(info.isoWeek);
+				}
+			});
+
+			return {
+				weekList: Array.from(weeks).sort((a, b) => a - b),
+				monthList: Array.from(monthsSet).sort((a, b) => a - b),
+			};
+		}
+
+		function refreshDynamicOptions() {
+			const y = Number(yearSelect.value);
+			const { weekList, monthList } = computeAvailableForYear(y);
+
+			// FLEXIBLE FALLBACKS if no data for that year:
+			// Weekly: allow week 1-3 (as you requested)
+			const weeksFinal = weekList.length ? weekList : [1, 2, 3];
+
+			// Monthly: allow all months if no data
+			const monthsFinal = monthList.length ? monthList : [0,1,2,3,4,5,6,7,8,9,10,11];
+
+			setSelectOptions(
+				weekSelect,
+				weeksFinal.map((w) => ({ label: `Week ${w}`, value: w })),
+				weeksFinal[0]
+			);
+
+			setSelectOptions(
+				monthSelect,
+				monthsFinal.map((m) => ({ label: months[m], value: m })),
+				monthsFinal[0]
+			);
+
+			// show/hide based on range
+			const v = rangeSelect.value;
+			weekWrap.style.display = v === "weekly" ? "flex" : "none";
+			monthWrap.style.display = v === "monthly" ? "flex" : "none";
+		}
+
+		rangeSelect.addEventListener("change", refreshDynamicOptions);
+		yearSelect.addEventListener("change", refreshDynamicOptions);
+		refreshDynamicOptions();
+
+		const actions = document.createElement("div");
+		actions.style.display = "flex";
+		actions.style.justifyContent = "flex-end";
+		actions.style.gap = "0.5rem";
+		actions.style.marginTop = "0.9rem";
+
+		const cancel = document.createElement("button");
+		cancel.type = "button";
+		cancel.className = "btn btn-outline";
+		cancel.textContent = "Cancel";
+		cancel.style.width = "auto";
+		cancel.style.padding = "0.5rem 1rem";
+		cancel.style.height = "auto";
+		cancel.addEventListener("click", () => ensureModal()._refs.closeModal());
+
+		const exportBtn = document.createElement("button");
+		exportBtn.type = "button";
+		exportBtn.className = "btn btn-primary";
+		exportBtn.textContent = "Export";
+		exportBtn.style.width = "auto";
+		exportBtn.style.padding = "0.5rem 1rem";
+		exportBtn.style.height = "auto";
+
+		exportBtn.addEventListener("click", () => {
+			const all = getTransactionRows();
+			const range = rangeSelect.value;
+			const year = Number(yearSelect.value);
+
+			let filtered = all;
+			let label = "";
+
+			if (range === "weekly") {
+				const week = Number(weekSelect.value);
+				filtered = filterWeekly(all, year, week);
+				label = `${year}_Week${week}`;
+			} else if (range === "monthly") {
+				const monthIdx = Number(monthSelect.value);
+				filtered = filterMonthly(all, year, monthIdx);
+				label = `${year}_${months[monthIdx]}`;
+			} else {
+				filtered = filterYearly(all, year);
+				label = `${year}`;
+			}
+
+			exportTransactionsExcel(filtered, label);
+			openTransactionsPDFPrint(filtered, label);
+			ensureModal()._refs.closeModal();
+		});
+
+		actions.appendChild(cancel);
+		actions.appendChild(exportBtn);
+
+		container.appendChild(card);
+		container.appendChild(grid);
+		container.appendChild(actions);
+
+		openModal("Export Data", container);
+	}
+
+	// ---------- Wire up ----------
+	function wireUpTransactionsPage() {
+		// Export Data button
+		const exportBtn = findButtonByText("Export Data");
+		if (exportBtn) exportBtn.addEventListener("click", openExportModal);
+
+		// View buttons (delegation)
+		document.addEventListener("click", (e) => {
+			const btn = e.target.closest("button");
+			if (!btn) return;
+			if ((btn.textContent || "").trim().toLowerCase() !== "view") return;
+
+			const tr = btn.closest("tr");
+			if (!tr) return;
+
+			const tds = $all("td", tr);
+			const rowData = {
+				id: (tds[0]?.textContent || "").trim(),
+				dt: (tds[1]?.textContent || "").trim(),
+				items: (tds[2]?.textContent || "").trim(),
+				total: (tds[3]?.textContent || "").trim(),
+				payment: (tds[4]?.textContent || "").trim(),
+				cashier: (tds[5]?.textContent || "").trim(),
+			};
+
+			openSingleTransactionPrint(rowData);
+		});
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", wireUpTransactionsPage);
+	} else {
+		wireUpTransactionsPage();
+	}
+})();
