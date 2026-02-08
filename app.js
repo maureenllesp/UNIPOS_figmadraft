@@ -1901,9 +1901,6 @@ setTimeout(closeAfterPrint, 1500);
 
 (function () {
 	// ---------- Helpers ----------
-	function $(sel, root = document) {
-		return root.querySelector(sel);
-	}
 	function $all(sel, root = document) {
 		return Array.from(root.querySelectorAll(sel));
 	}
@@ -1925,8 +1922,7 @@ setTimeout(closeAfterPrint, 1500);
 		setTimeout(() => URL.revokeObjectURL(url), 500);
 	}
 	function nowStamp() {
-		const d = new Date();
-		return d.toISOString().slice(0, 10);
+		return new Date().toISOString().slice(0, 10);
 	}
 	function escapeHtml(str) {
 		return String(str ?? "")
@@ -1937,24 +1933,21 @@ setTimeout(closeAfterPrint, 1500);
 			.replaceAll("'", "&#039;");
 	}
 
-	// ---------- ISO Week helpers ----------
-	// Returns ISO week-year + ISO week number (1-53)
+	// ---------- Date + ISO Week ----------
 	function isoWeekInfo(date) {
 		const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-		const dayNum = d.getUTCDay() || 7; // 1..7 (Mon..Sun)
-		d.setUTCDate(d.getUTCDate() + 4 - dayNum); // nearest Thu
+		const dayNum = d.getUTCDay() || 7;
+		d.setUTCDate(d.getUTCDate() + 4 - dayNum);
 		const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
 		const weekNo = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
 		return { isoYear: d.getUTCFullYear(), isoWeek: weekNo };
 	}
-
 	function parseTransactionDate(s) {
-		// Your UI sample: "Jan 13, 2025 10:45 AM"
 		const d = new Date(s);
 		return isNaN(d.getTime()) ? null : d;
 	}
 
-	// ---------- Modal (reuse if exists; else create) ----------
+	// ---------- Modal (reuse if exists) ----------
 	let overlay = document.getElementById("unipos-modal-overlay") || null;
 
 	function ensureModal() {
@@ -1974,7 +1967,7 @@ setTimeout(closeAfterPrint, 1500);
 
 		const modal = document.createElement("div");
 		modal.className = "glass-card";
-		modal.style.width = "min(760px, 100%)";
+		modal.style.width = "min(860px, 100%)";
 		modal.style.borderRadius = "16px";
 		modal.style.overflow = "hidden";
 		modal.style.boxShadow = "0 20px 60px rgba(0,0,0,0.25)";
@@ -1989,7 +1982,7 @@ setTimeout(closeAfterPrint, 1500);
 		const title = document.createElement("div");
 		title.style.fontWeight = "800";
 		title.style.fontSize = "1.1rem";
-		title.textContent = "Export";
+		title.textContent = "Modal";
 
 		const closeBtn = document.createElement("button");
 		closeBtn.className = "btn btn-outline";
@@ -2036,12 +2029,11 @@ setTimeout(closeAfterPrint, 1500);
 		o.style.display = "flex";
 	}
 
-	// ---------- Read transactions from table ----------
+	// ---------- Read transactions ----------
 	function getTransactionRows() {
 		const tbody = document.querySelector("table tbody");
 		if (!tbody) return [];
 		const trs = $all("tr", tbody);
-
 		return trs.map((tr) => {
 			const tds = $all("td", tr);
 			return {
@@ -2056,33 +2048,49 @@ setTimeout(closeAfterPrint, 1500);
 	}
 
 	// ---------- Filters ----------
-	function filterWeekly(rows, year, week) {
+	function filterWeeklyRange(rows, year, wf, wt) {
+		const y = Number(year);
+		let a = Number(wf);
+		let b = Number(wt);
+		if (a > b) [a, b] = [b, a];
+
 		return rows.filter((r) => {
 			const d = parseTransactionDate(r.dt);
 			if (!d) return true;
 			const info = isoWeekInfo(d);
-			return info.isoYear === Number(year) && info.isoWeek === Number(week);
-		});
-	}
-	function filterMonthly(rows, year, monthIndex0) {
-		return rows.filter((r) => {
-			const d = parseTransactionDate(r.dt);
-			if (!d) return true;
-			return d.getFullYear() === Number(year) && d.getMonth() === Number(monthIndex0);
-		});
-	}
-	function filterYearly(rows, year) {
-		return rows.filter((r) => {
-			const d = parseTransactionDate(r.dt);
-			if (!d) return true;
-			return d.getFullYear() === Number(year);
+			return info.isoYear === y && info.isoWeek >= a && info.isoWeek <= b;
 		});
 	}
 
-	// ---------- Export Excel (.xls HTML table) ----------
-	function exportTransactionsExcel(rows, label) {
-		const stamp = nowStamp();
-		const xls = `<!doctype html>
+	function filterMonthlyRange(rows, year, mf, mt) {
+		const y = Number(year);
+		let a = Number(mf);
+		let b = Number(mt);
+		if (a > b) [a, b] = [b, a];
+
+		return rows.filter((r) => {
+			const d = parseTransactionDate(r.dt);
+			if (!d) return true;
+			return d.getFullYear() === y && d.getMonth() >= a && d.getMonth() <= b;
+		});
+	}
+
+	function filterYearlyRange(rows, yf, yt) {
+		let a = Number(yf);
+		let b = Number(yt);
+		if (a > b) [a, b] = [b, a];
+
+		return rows.filter((r) => {
+			const d = parseTransactionDate(r.dt);
+			if (!d) return true;
+			const y = d.getFullYear();
+			return y >= a && y <= b;
+		});
+	}
+
+	// ---------- Export builders ----------
+	function buildExcelTable(rows, label) {
+		return `<!doctype html>
 <html>
 <head><meta charset="utf-8"/></head>
 <body>
@@ -2107,19 +2115,15 @@ setTimeout(closeAfterPrint, 1500);
   </table>
 </body>
 </html>`;
-
-		downloadFile(`Transactions_${label}_${stamp}.xls`, "application/vnd.ms-excel", xls);
 	}
 
-	// ---------- Export PDF (print view) ----------
-	function openTransactionsPDFPrint(rows, label) {
+	function openPDFPrint(rows, label) {
 		const now = new Date();
-
 		const html = `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8"/>
-<title>Transactions (${escapeHtml(label)})</title>
+<title>${escapeHtml(label)}</title>
 <style>
   body{font-family:Arial, sans-serif; padding:24px;}
   h1{margin:0 0 10px;}
@@ -2130,7 +2134,7 @@ setTimeout(closeAfterPrint, 1500);
 </style>
 </head>
 <body>
-  <h1>Transactions (${escapeHtml(label)})</h1>
+  <h1>${escapeHtml(label)}</h1>
   <p class="muted">Generated: ${now.toLocaleString()}</p>
   <table>
     <thead>
@@ -2154,91 +2158,20 @@ setTimeout(closeAfterPrint, 1500);
 			.join("")}
     </tbody>
   </table>
-  <script>
-    window.onload = () => window.print();
-  </script>
+  <script>window.onload=()=>window.print();</script>
 </body>
 </html>`;
 
 		const w = window.open("", "_blank");
-
-		// Close print tab after print/cancel so user returns to Transactions page
-		const closeAfterPrint = () => {
+		if (!w) {
+			alert("Popup blocked. Please allow popups for this site to download/print PDF.");
+			return;
+		}
+		const closeAfter = () => {
 			try { w.close(); } catch (e) {}
 		};
-		w.onafterprint = closeAfterPrint;
-		setTimeout(closeAfterPrint, 2000);
-
-		w.document.open();
-		w.document.write(html);
-		w.document.close();
-	}
-
-	// ---------- View Single Transaction (printable receipt) ----------
-	function openSingleTransactionPrint(rowData) {
-		const now = new Date();
-
-		const html = `<!doctype html>
-<html>
-<head>
-<meta charset="utf-8"/>
-<title>${escapeHtml(rowData.id)}</title>
-<style>
-  body{font-family:Arial, sans-serif; padding:24px;}
-  h1{margin:0 0 10px;}
-  .muted{color:#555; margin:0 0 18px;}
-  .card{border:1px solid #ddd; border-radius:10px; padding:14px;}
-  .grid{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
-  .label{color:#555; font-size:12px; margin-bottom:4px;}
-  .value{font-weight:800;}
-</style>
-</head>
-<body>
-  <h1>Transaction Receipt</h1>
-  <p class="muted">Print-ready view • Generated: ${now.toLocaleString()}</p>
-
-  <div class="card">
-    <div class="grid">
-      <div>
-        <div class="label">Transaction ID</div>
-        <div class="value">${escapeHtml(rowData.id)}</div>
-      </div>
-      <div>
-        <div class="label">Date & Time</div>
-        <div class="value">${escapeHtml(rowData.dt)}</div>
-      </div>
-      <div>
-        <div class="label">Items</div>
-        <div class="value">${escapeHtml(rowData.items)}</div>
-      </div>
-      <div>
-        <div class="label">Total</div>
-        <div class="value">${escapeHtml(rowData.total)}</div>
-      </div>
-      <div>
-        <div class="label">Payment</div>
-        <div class="value">${escapeHtml(rowData.payment)}</div>
-      </div>
-      <div>
-        <div class="label">Cashier</div>
-        <div class="value">${escapeHtml(rowData.cashier)}</div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    window.onload = () => window.print();
-  </script>
-</body>
-</html>`;
-
-		const w = window.open("", "_blank");
-		const closeAfterPrint = () => {
-			try { w.close(); } catch (e) {}
-		};
-		w.onafterprint = closeAfterPrint;
-		setTimeout(closeAfterPrint, 2000);
-
+		w.onafterprint = closeAfter;
+		setTimeout(closeAfter, 2000);
 		w.document.open();
 		w.document.write(html);
 		w.document.close();
@@ -2254,7 +2187,565 @@ setTimeout(closeAfterPrint, 1500);
 		const label = document.createElement("label");
 		label.textContent = labelText;
 		label.style.fontSize = "0.875rem";
-		label.style.fontWeight = "700";
+		label.style.fontWeight = "800";
+		label.style.opacity = "0.9";
+
+		inputEl.style.width = "100%";
+		inputEl.style.padding = "0.75rem 0.85rem";
+		inputEl.style.borderRadius = "12px";
+		inputEl.style.border = "1px solid rgba(0,0,0,0.08)";
+		inputEl.style.outline = "none";
+		inputEl.style.background = "rgba(255,255,255,0.65)";
+		inputEl.style.backdropFilter = "blur(8px)";
+
+		wrap.appendChild(label);
+		wrap.appendChild(inputEl);
+		return wrap;
+	}
+	function makeSelect(options, value) {
+		const sel = document.createElement("select");
+		options.forEach((o) => {
+			const opt = document.createElement("option");
+			opt.value = String(o.value);
+			opt.textContent = o.label;
+			sel.appendChild(opt);
+		});
+		sel.value = String(value);
+		return sel;
+	}
+	function showError(msg) {
+		alert(msg);
+	}
+
+	// ---------- Export Modal (NO AUTO DOWNLOAD) ----------
+	function openExportModal() {
+		const rows = getTransactionRows();
+
+		const yearsInData = Array.from(
+			new Set(
+				rows
+					.map((r) => {
+						const d = parseTransactionDate(r.dt);
+						return d ? d.getFullYear() : null;
+					})
+					.filter(Boolean)
+			)
+		).sort((a, b) => a - b);
+
+		const currentYear = new Date().getFullYear();
+		const yearOptions = yearsInData.length ? yearsInData : [currentYear - 2, currentYear - 1, currentYear];
+		const maxYear = Math.max(...yearOptions.map(Number));
+
+		const months = [
+			"January","February","March","April","May","June",
+			"July","August","September","October","November","December"
+		];
+
+		const container = document.createElement("div");
+		container.style.display = "flex";
+		container.style.flexDirection = "column";
+		container.style.gap = "0.9rem";
+
+		const intro = document.createElement("div");
+		intro.style.padding = "1rem";
+		intro.style.borderRadius = "14px";
+		intro.style.border = "1px solid rgba(0,0,0,0.08)";
+		intro.style.background = "rgba(255,255,255,0.55)";
+		intro.style.backdropFilter = "blur(10px)";
+
+		const t = document.createElement("div");
+		t.style.fontWeight = "900";
+		t.style.fontSize = "1.05rem";
+		t.textContent = "Export Transactions";
+
+		const d = document.createElement("div");
+		d.style.marginTop = "0.35rem";
+		d.style.opacity = "0.85";
+		d.textContent = "Choose your range then click Download Excel or Download PDF.";
+
+		intro.appendChild(t);
+		intro.appendChild(d);
+
+		// Range type
+		const rangeSelect = makeSelect(
+			[
+				{ label: "Weekly", value: "weekly" },
+				{ label: "Monthly", value: "monthly" },
+				{ label: "Yearly", value: "yearly" },
+			],
+			"weekly"
+		);
+
+		// Weekly controls
+		const weeklyYear = makeSelect(yearOptions.map((y) => ({ label: String(y), value: y })), yearOptions[0]);
+		const weekFrom = makeSelect(Array.from({ length: 53 }, (_, i) => ({ label: `Week ${i + 1}`, value: i + 1 })), 1);
+		const weekTo = makeSelect(Array.from({ length: 53 }, (_, i) => ({ label: `Week ${i + 1}`, value: i + 1 })), 1);
+
+		// Monthly controls
+		const monthlyYear = makeSelect(yearOptions.map((y) => ({ label: String(y), value: y })), yearOptions[0]);
+		const monthFrom = makeSelect(months.map((m, i) => ({ label: m, value: i })), 0);
+		const monthTo = makeSelect(months.map((m, i) => ({ label: m, value: i })), 0);
+
+		// Yearly controls
+		const yearFrom = makeSelect(yearOptions.map((y) => ({ label: String(y), value: y })), yearOptions[0]);
+		const yearTo = makeSelect(
+			yearOptions.map((y) => ({ label: String(y), value: y })),
+			yearOptions[yearOptions.length - 1]
+		);
+
+		// Layout blocks
+		const topGrid = document.createElement("div");
+		topGrid.style.display = "grid";
+		topGrid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+		topGrid.style.gap = "0.9rem";
+		topGrid.appendChild(field("Range Type", rangeSelect));
+		topGrid.appendChild(document.createElement("div"));
+
+		const weeklyBlock = document.createElement("div");
+		weeklyBlock.style.display = "grid";
+		weeklyBlock.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+		weeklyBlock.style.gap = "0.9rem";
+		weeklyBlock.appendChild(field("Weekly Year", weeklyYear));
+		weeklyBlock.appendChild(field("Week From", weekFrom));
+		weeklyBlock.appendChild(field("Week To", weekTo));
+
+		const monthlyBlock = document.createElement("div");
+		monthlyBlock.style.display = "grid";
+		monthlyBlock.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+		monthlyBlock.style.gap = "0.9rem";
+		monthlyBlock.appendChild(field("Monthly Year", monthlyYear));
+		monthlyBlock.appendChild(field("Month From", monthFrom));
+		monthlyBlock.appendChild(field("Month To", monthTo));
+
+		const yearlyBlock = document.createElement("div");
+		yearlyBlock.style.display = "grid";
+		yearlyBlock.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+		yearlyBlock.style.gap = "0.9rem";
+		yearlyBlock.appendChild(field("Year From", yearFrom));
+		yearlyBlock.appendChild(field("Year To", yearTo));
+
+		function syncVisibility() {
+			const v = rangeSelect.value;
+			weeklyBlock.style.display = v === "weekly" ? "grid" : "none";
+			monthlyBlock.style.display = v === "monthly" ? "grid" : "none";
+			yearlyBlock.style.display = v === "yearly" ? "grid" : "none";
+		}
+		rangeSelect.addEventListener("change", syncVisibility);
+		syncVisibility();
+
+		// Restrictions (Dec->Dec only, Week53->53 only, maxYear locked)
+		function syncEndRestrictions() {
+			// Week end restriction
+			if (Number(weekFrom.value) === 53) {
+				weekTo.value = "53";
+				weekTo.disabled = true;
+			} else {
+				weekTo.disabled = false;
+				if (Number(weekTo.value) < Number(weekFrom.value)) weekTo.value = weekFrom.value;
+			}
+
+			// Month end restriction
+			if (Number(monthFrom.value) === 11) {
+				monthTo.value = "11";
+				monthTo.disabled = true;
+			} else {
+				monthTo.disabled = false;
+				if (Number(monthTo.value) < Number(monthFrom.value)) monthTo.value = monthFrom.value;
+			}
+
+			// Year end restriction
+			if (Number(yearFrom.value) === maxYear) {
+				yearTo.value = String(maxYear);
+				yearTo.disabled = true;
+			} else {
+				yearTo.disabled = false;
+				if (Number(yearTo.value) < Number(yearFrom.value)) yearTo.value = yearFrom.value;
+			}
+		}
+
+		weekFrom.addEventListener("change", syncEndRestrictions);
+		monthFrom.addEventListener("change", syncEndRestrictions);
+		yearFrom.addEventListener("change", syncEndRestrictions);
+
+		weekTo.addEventListener("change", () => {
+			if (Number(weekTo.value) < Number(weekFrom.value)) {
+				showError("Invalid week range: Week To cannot be less than Week From.");
+				weekTo.value = weekFrom.value;
+			}
+		});
+		monthTo.addEventListener("change", () => {
+			if (Number(monthTo.value) < Number(monthFrom.value)) {
+				showError("Invalid month range: Month To cannot be earlier than Month From.");
+				monthTo.value = monthFrom.value;
+			}
+		});
+		yearTo.addEventListener("change", () => {
+			if (Number(yearTo.value) < Number(yearFrom.value)) {
+				showError("Invalid year range: Year To cannot be less than Year From.");
+				yearTo.value = yearFrom.value;
+			}
+		});
+
+		syncEndRestrictions();
+
+		// Preview label + compute filtered rows (ONLY when download is clicked)
+		function computeSelection() {
+			const all = getTransactionRows(); // refresh in case table changed
+			const type = rangeSelect.value;
+
+			if (type === "weekly") {
+				const y = Number(weeklyYear.value);
+				const wf = Number(weekFrom.value);
+				const wt = Number(weekTo.value);
+				const label = `${y}_W${Math.min(wf, wt)}-W${Math.max(wf, wt)}`;
+				return { rows: filterWeeklyRange(all, y, wf, wt), label };
+			}
+
+			if (type === "monthly") {
+				const y = Number(monthlyYear.value);
+				const mf = Number(monthFrom.value);
+				const mt = Number(monthTo.value);
+				const label = `${y}_${months[Math.min(mf, mt)]}-${months[Math.max(mf, mt)]}`;
+				return { rows: filterMonthlyRange(all, y, mf, mt), label };
+			}
+
+			const yf = Number(yearFrom.value);
+			const yt = Number(yearTo.value);
+			const label = `Y${Math.min(yf, yt)}-Y${Math.max(yf, yt)}`;
+			return { rows: filterYearlyRange(all, yf, yt), label };
+		}
+
+		// Action buttons
+		const actions = document.createElement("div");
+		actions.style.display = "flex";
+		actions.style.justifyContent = "flex-end";
+		actions.style.gap = "0.5rem";
+		actions.style.marginTop = "0.25rem";
+
+		const cancel = document.createElement("button");
+		cancel.type = "button";
+		cancel.className = "btn btn-outline";
+		cancel.textContent = "Cancel";
+		cancel.style.width = "auto";
+		cancel.style.padding = "0.5rem 1rem";
+		cancel.style.height = "auto";
+		cancel.addEventListener("click", () => ensureModal()._refs.closeModal());
+
+		const dlExcel = document.createElement("button");
+		dlExcel.type = "button";
+		dlExcel.className = "btn btn-primary";
+		dlExcel.textContent = "Download Excel";
+		dlExcel.style.width = "auto";
+		dlExcel.style.padding = "0.5rem 1rem";
+		dlExcel.style.height = "auto";
+
+		const dlPdf = document.createElement("button");
+		dlPdf.type = "button";
+		dlPdf.className = "btn btn-outline";
+		dlPdf.textContent = "Download PDF";
+		dlPdf.style.width = "auto";
+		dlPdf.style.padding = "0.5rem 1rem";
+		dlPdf.style.height = "auto";
+
+		dlExcel.addEventListener("click", () => {
+			const sel = computeSelection();
+			const content = buildExcelTable(sel.rows, sel.label);
+			downloadFile(`Transactions_${sel.label}_${nowStamp()}.xls`, "application/vnd.ms-excel", content);
+		});
+
+		dlPdf.addEventListener("click", () => {
+			const sel = computeSelection();
+			openPDFPrint(sel.rows, `Transactions (${sel.label})`);
+		});
+
+		actions.appendChild(cancel);
+		actions.appendChild(dlPdf);
+		actions.appendChild(dlExcel);
+
+		container.appendChild(intro);
+		container.appendChild(topGrid);
+		container.appendChild(weeklyBlock);
+		container.appendChild(monthlyBlock);
+		container.appendChild(yearlyBlock);
+		container.appendChild(actions);
+
+		openModal("Export Data", container);
+	}
+
+	// ---------- View Modal (NO AUTO DOWNLOAD) ----------
+	function openViewModal(row) {
+		const container = document.createElement("div");
+		container.style.display = "flex";
+		container.style.flexDirection = "column";
+		container.style.gap = "0.9rem";
+
+		const box = document.createElement("div");
+		box.style.padding = "1rem";
+		box.style.borderRadius = "14px";
+		box.style.border = "1px solid rgba(0,0,0,0.08)";
+		box.style.background = "rgba(255,255,255,0.55)";
+		box.style.backdropFilter = "blur(10px)";
+
+		const title = document.createElement("div");
+		title.style.fontWeight = "900";
+		title.style.fontSize = "1.05rem";
+		title.textContent = `Transaction: ${row.id}`;
+
+		const sub = document.createElement("div");
+		sub.style.marginTop = "0.35rem";
+		sub.style.opacity = "0.85";
+		sub.textContent = "Choose download type. PDF will open print dialog (Save as PDF).";
+
+		box.appendChild(title);
+		box.appendChild(sub);
+
+		const details = document.createElement("div");
+		details.style.display = "grid";
+		details.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+		details.style.gap = "0.75rem";
+		details.style.marginTop = "0.75rem";
+
+		function detail(label, value) {
+			const wrap = document.createElement("div");
+			wrap.style.padding = "0.75rem";
+			wrap.style.borderRadius = "12px";
+			wrap.style.border = "1px solid rgba(0,0,0,0.06)";
+			wrap.style.background = "rgba(255,255,255,0.55)";
+			const l = document.createElement("div");
+			l.style.fontSize = "0.75rem";
+			l.style.opacity = "0.75";
+			l.style.fontWeight = "700";
+			l.textContent = label;
+			const v = document.createElement("div");
+			v.style.fontWeight = "900";
+			v.style.marginTop = "0.25rem";
+			v.textContent = value;
+			wrap.appendChild(l);
+			wrap.appendChild(v);
+			return wrap;
+		}
+
+		details.appendChild(detail("Date & Time", row.dt));
+		details.appendChild(detail("Items", row.items));
+		details.appendChild(detail("Total", row.total));
+		details.appendChild(detail("Payment", row.payment));
+		details.appendChild(detail("Cashier", row.cashier));
+
+		const actions = document.createElement("div");
+		actions.style.display = "flex";
+		actions.style.justifyContent = "flex-end";
+		actions.style.gap = "0.5rem";
+
+		const close = document.createElement("button");
+		close.type = "button";
+		close.className = "btn btn-outline";
+		close.textContent = "Close";
+		close.style.width = "auto";
+		close.style.padding = "0.5rem 1rem";
+		close.style.height = "auto";
+		close.addEventListener("click", () => ensureModal()._refs.closeModal());
+
+		const dlExcel = document.createElement("button");
+		dlExcel.type = "button";
+		dlExcel.className = "btn btn-primary";
+		dlExcel.textContent = "Download Excel";
+		dlExcel.style.width = "auto";
+		dlExcel.style.padding = "0.5rem 1rem";
+		dlExcel.style.height = "auto";
+
+		const dlPdf = document.createElement("button");
+		dlPdf.type = "button";
+		dlPdf.className = "btn btn-outline";
+		dlPdf.textContent = "Download PDF / Print";
+		dlPdf.style.width = "auto";
+		dlPdf.style.padding = "0.5rem 1rem";
+		dlPdf.style.height = "auto";
+
+		dlExcel.addEventListener("click", () => {
+			const label = `Receipt_${row.id}`;
+			const rows = [row];
+			const content = buildExcelTable(rows, label);
+			downloadFile(`Receipt_${row.id}_${nowStamp()}.xls`, "application/vnd.ms-excel", content);
+		});
+
+		dlPdf.addEventListener("click", () => {
+			openPDFPrint([row], `Transaction Receipt (${row.id})`);
+		});
+
+		actions.appendChild(close);
+		actions.appendChild(dlPdf);
+		actions.appendChild(dlExcel);
+
+		container.appendChild(box);
+		container.appendChild(details);
+		container.appendChild(actions);
+
+		openModal("Transaction Details", container);
+	}
+
+	// ---------- Wire up ----------
+	function wireUp() {
+		// Export Data button
+		const exportBtn = findButtonByText("Export Data");
+		if (exportBtn) exportBtn.addEventListener("click", openExportModal);
+
+		// View buttons (delegation)
+		document.addEventListener("click", (e) => {
+			const btn = e.target.closest("button");
+			if (!btn) return;
+			const label = (btn.textContent || "").trim().toLowerCase();
+			if (label !== "view") return;
+
+			const tr = btn.closest("tr");
+			if (!tr) return;
+
+			const tds = $all("td", tr);
+			const row = {
+				id: (tds[0]?.textContent || "").trim(),
+				dt: (tds[1]?.textContent || "").trim(),
+				items: (tds[2]?.textContent || "").trim(),
+				total: (tds[3]?.textContent || "").trim(),
+				payment: (tds[4]?.textContent || "").trim(),
+				cashier: (tds[5]?.textContent || "").trim(),
+			};
+
+			openViewModal(row);
+		});
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", wireUp);
+	} else {
+		wireUp();
+	}
+})();
+
+
+//////
+//REFUNDS
+//////
+
+
+(function () {
+	// ---------- Helpers ----------
+	function $all(sel, root = document) {
+		return Array.from(root.querySelectorAll(sel));
+	}
+	function $(sel, root = document) {
+		return root.querySelector(sel);
+	}
+	function escapeHtml(str) {
+		return String(str ?? "")
+			.replaceAll("&", "&amp;")
+			.replaceAll("<", "&lt;")
+			.replaceAll(">", "&gt;")
+			.replaceAll('"', "&quot;")
+			.replaceAll("'", "&#039;");
+	}
+	function textLower(el) {
+		return (el?.textContent || "").trim().toLowerCase();
+	}
+	function formatDateLong(d) {
+		// "Jan 13, 2025" style
+		return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+	}
+	function todayLong() {
+		return formatDateLong(new Date());
+	}
+
+	// ---------- Minimal modal (glass style) ----------
+	let overlay = document.getElementById("unipos-modal-overlay") || null;
+
+	function ensureModal() {
+		if (overlay) return overlay;
+
+		overlay = document.createElement("div");
+		overlay.id = "unipos-modal-overlay";
+		overlay.style.position = "fixed";
+		overlay.style.inset = "0";
+		overlay.style.zIndex = "9999";
+		overlay.style.display = "none";
+		overlay.style.alignItems = "center";
+		overlay.style.justifyContent = "center";
+		overlay.style.padding = "1rem";
+		overlay.style.background = "rgba(15, 23, 42, 0.35)";
+		overlay.style.backdropFilter = "blur(10px)";
+
+		const modal = document.createElement("div");
+		modal.className = "glass-card";
+		modal.style.width = "min(720px, 100%)";
+		modal.style.borderRadius = "16px";
+		modal.style.overflow = "hidden";
+		modal.style.boxShadow = "0 20px 60px rgba(0,0,0,0.25)";
+
+		const header = document.createElement("div");
+		header.style.display = "flex";
+		header.style.alignItems = "center";
+		header.style.justifyContent = "space-between";
+		header.style.padding = "1rem 1.25rem";
+		header.style.borderBottom = "1px solid rgba(0,0,0,0.06)";
+
+		const title = document.createElement("div");
+		title.style.fontWeight = "900";
+		title.style.fontSize = "1.1rem";
+		title.textContent = "Modal";
+
+		const closeBtn = document.createElement("button");
+		closeBtn.className = "btn btn-outline";
+		closeBtn.type = "button";
+		closeBtn.textContent = "Close";
+		closeBtn.style.width = "auto";
+		closeBtn.style.padding = "0.45rem 0.9rem";
+		closeBtn.style.height = "auto";
+		closeBtn.style.fontSize = "0.875rem";
+
+		header.appendChild(title);
+		header.appendChild(closeBtn);
+
+		const body = document.createElement("div");
+		body.style.padding = "1.25rem";
+
+		modal.appendChild(header);
+		modal.appendChild(body);
+		overlay.appendChild(modal);
+		document.body.appendChild(overlay);
+
+		function closeModal() {
+			overlay.style.display = "none";
+			body.innerHTML = "";
+		}
+
+		closeBtn.addEventListener("click", closeModal);
+		overlay.addEventListener("click", (e) => {
+			if (e.target === overlay) closeModal();
+		});
+		document.addEventListener("keydown", (e) => {
+			if (overlay.style.display !== "none" && e.key === "Escape") closeModal();
+		});
+
+		overlay._refs = { title, body, closeModal };
+		return overlay;
+	}
+
+	function openModal(modalTitle, contentNode) {
+		const o = ensureModal();
+		o._refs.title.textContent = modalTitle;
+		o._refs.body.innerHTML = "";
+		o._refs.body.appendChild(contentNode);
+		o.style.display = "flex";
+	}
+
+	// ---------- Form UI helpers ----------
+	function formGroup(labelText, inputEl) {
+		const wrap = document.createElement("div");
+		wrap.style.display = "flex";
+		wrap.style.flexDirection = "column";
+		wrap.style.gap = "0.35rem";
+
+		const label = document.createElement("label");
+		label.textContent = labelText;
+		label.style.fontSize = "0.875rem";
+		label.style.fontWeight = "800";
 		label.style.opacity = "0.9";
 
 		inputEl.style.width = "100%";
@@ -2270,266 +2761,345 @@ setTimeout(closeAfterPrint, 1500);
 		return wrap;
 	}
 
-	function makeSelect(options, value) {
-		const sel = document.createElement("select");
-		options.forEach((o) => {
-			const opt = document.createElement("option");
-			opt.value = String(o.value);
-			opt.textContent = o.label;
-			sel.appendChild(opt);
-		});
-		sel.value = String(value);
-		return sel;
+	function makeInput(type, value = "") {
+		const i = document.createElement("input");
+		i.type = type;
+		i.value = value;
+		return i;
 	}
 
-	function setSelectOptions(selectEl, options, fallbackValue) {
-		selectEl.innerHTML = "";
-		options.forEach((o) => {
-			const opt = document.createElement("option");
-			opt.value = String(o.value);
-			opt.textContent = o.label;
-			selectEl.appendChild(opt);
+	function makeTextarea(value = "") {
+		const t = document.createElement("textarea");
+		t.rows = 3;
+		t.value = value;
+		t.style.resize = "vertical";
+		return t;
+	}
+
+	function makeSelect(options, value) {
+		const s = document.createElement("select");
+		options.forEach((opt) => {
+			const o = document.createElement("option");
+			o.value = String(opt.value);
+			o.textContent = opt.label;
+			s.appendChild(o);
 		});
-		if (options.length) {
-			selectEl.value = String(fallbackValue ?? options[0].value);
+		s.value = String(value);
+		return s;
+	}
+
+	function showError(msg) {
+		alert(msg);
+	}
+
+	// ---------- Refund ID generator ----------
+	function nextRefundId() {
+		const tbody = document.querySelector("table tbody");
+		if (!tbody) return "REF-0001";
+
+		let maxNum = 0;
+		$all("tr", tbody).forEach((tr) => {
+			const id = (tr.querySelector("td")?.textContent || "").trim(); // first td
+			const m = id.match(/REF-(\d+)/i);
+			if (m) maxNum = Math.max(maxNum, Number(m[1]));
+		});
+
+		const next = maxNum + 1;
+		return `REF-${String(next).padStart(4, "0")}`;
+	}
+
+	// ---------- Try to get amount from TRANSACTIONS table (if available on page) ----------
+	function findAmountByTransactionId(txnId) {
+		// If transactions table exists on current page, search it.
+		const tables = $all("table");
+		for (const table of tables) {
+			const ths = $all("thead th", table).map((th) => (th.textContent || "").trim().toLowerCase());
+			const maybeTransactions =
+				ths.includes("transaction id") &&
+				(ths.includes("total") || ths.includes("amount") || ths.includes("total amount"));
+
+			if (!maybeTransactions) continue;
+
+			const trs = $all("tbody tr", table);
+			for (const tr of trs) {
+				const tds = $all("td", tr);
+				const idText = (tds[0]?.textContent || "").trim();
+				if (idText === txnId) {
+					// try total column (commonly 4th td in your Transactions page)
+					// Transaction table: ID, Date, Items, Total, Payment, Cashier
+					const totalText = (tds[3]?.textContent || "").trim();
+					return totalText || "";
+				}
+			}
+		}
+		return "";
+	}
+
+	// ---------- Badge update ----------
+	function setStatusBadge(span, status) {
+		const s = String(status).toLowerCase();
+		span.classList.remove("success", "warning", "danger");
+
+		if (s === "completed") {
+			span.classList.add("success");
+			span.textContent = "Completed";
+		} else if (s === "rejected") {
+			span.classList.add("danger");
+			span.textContent = "Rejected";
+		} else {
+			span.classList.add("warning");
+			span.textContent = "Pending";
 		}
 	}
 
-	// ---------- Export Modal (FLEXIBLE) ----------
-	function openExportModal() {
+	// ---------- Edit Refund modal (Process) ----------
+	function openEditRefundModal(tr) {
+		const tds = $all("td", tr);
+		const refundId = (tds[0]?.textContent || "").trim();
+		const txnId = (tds[1]?.textContent || "").trim();
+		const date = (tds[2]?.textContent || "").trim();
+		const amount = (tds[3]?.textContent || "").trim();
+		const reason = (tds[4]?.textContent || "").trim();
+		const badge = tds[5]?.querySelector("span");
+		const currentStatus = (badge?.textContent || "Pending").trim();
+
 		const container = document.createElement("div");
 		container.style.display = "flex";
 		container.style.flexDirection = "column";
-		container.style.gap = "0.9rem";
-
-		const card = document.createElement("div");
-		card.style.padding = "1rem";
-		card.style.borderRadius = "14px";
-		card.style.border = "1px solid rgba(0,0,0,0.08)";
-		card.style.background = "rgba(255,255,255,0.55)";
-		card.style.backdropFilter = "blur(10px)";
-
-		const title = document.createElement("div");
-		title.style.fontWeight = "900";
-		title.style.fontSize = "1.05rem";
-		title.textContent = "Export Transactions";
-
-		const desc = document.createElement("div");
-		desc.style.marginTop = "0.35rem";
-		desc.style.opacity = "0.85";
-		desc.textContent =
-			"Choose Weekly/Monthly/Yearly and select the year (and week/month). Exports Excel + opens printable PDF.";
-
-		card.appendChild(title);
-		card.appendChild(desc);
-
-		const rows = getTransactionRows();
-
-		// months list
-		const months = [
-			"January","February","March","April","May","June",
-			"July","August","September","October","November","December"
-		];
-
-		// Flexible years: years from data + currentYear-5..currentYear+1
-		const currentYear = new Date().getFullYear();
-		const yearsInData = Array.from(
-			new Set(
-				rows
-					.map((r) => {
-						const d = parseTransactionDate(r.dt);
-						return d ? d.getFullYear() : null;
-					})
-					.filter(Boolean)
-			)
-		).sort((a, b) => a - b);
-
-		const yearSet = new Set(yearsInData);
-		for (let y = currentYear - 5; y <= currentYear + 1; y++) yearSet.add(y);
-		const yearOptions = Array.from(yearSet).sort((a, b) => a - b);
-
-		const rangeSelect = makeSelect(
-			[
-				{ label: "Weekly", value: "weekly" },
-				{ label: "Monthly", value: "monthly" },
-				{ label: "Yearly", value: "yearly" },
-			],
-			"weekly"
-		);
-
-		const yearSelect = makeSelect(
-			yearOptions.map((y) => ({ label: String(y), value: y })),
-			(yearsInData[yearsInData.length - 1] ?? currentYear)
-		);
-
-		// Week/Month selects are dynamic
-		const weekSelect = document.createElement("select");
-		const monthSelect = document.createElement("select");
+		container.style.gap = "1rem";
 
 		const grid = document.createElement("div");
 		grid.style.display = "grid";
 		grid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
 		grid.style.gap = "0.9rem";
-		grid.style.marginTop = "0.9rem";
 
-		const weekWrap = field("Week", weekSelect);
-		const monthWrap = field("Month", monthSelect);
+		const refundIdInput = makeInput("text", refundId);
+		refundIdInput.disabled = true;
 
-		grid.appendChild(field("Range", rangeSelect));
-		grid.appendChild(field("Year", yearSelect));
-		grid.appendChild(weekWrap);
-		grid.appendChild(monthWrap);
+		const txnInput = makeInput("text", txnId);
+		txnInput.disabled = true;
 
-		function computeAvailableForYear(selectedYear) {
-			const weeks = new Set();
-			const monthsSet = new Set();
+		const dateInput = makeInput("text", date);
+		dateInput.disabled = true;
 
-			rows.forEach((r) => {
-				const d = parseTransactionDate(r.dt);
-				if (!d) return;
+		const amountInput = makeInput("text", amount);
+		amountInput.disabled = true;
 
-				// month options (normal year)
-				if (d.getFullYear() === Number(selectedYear)) {
-					monthsSet.add(d.getMonth());
-				}
+		const reasonInput = makeTextarea(reason);
 
-				// week options (ISO week-year)
-				const info = isoWeekInfo(d);
-				if (info.isoYear === Number(selectedYear)) {
-					weeks.add(info.isoWeek);
-				}
-			});
+		const statusSelect = makeSelect(
+			[
+				{ label: "Pending", value: "Pending" },
+				{ label: "Completed", value: "Completed" },
+				{ label: "Rejected", value: "Rejected" },
+			],
+			currentStatus
+		);
 
-			return {
-				weekList: Array.from(weeks).sort((a, b) => a - b),
-				monthList: Array.from(monthsSet).sort((a, b) => a - b),
-			};
-		}
+		grid.appendChild(formGroup("Refund ID", refundIdInput));
+		grid.appendChild(formGroup("Transaction ID", txnInput));
+		grid.appendChild(formGroup("Date", dateInput));
+		grid.appendChild(formGroup("Amount", amountInput));
 
-		function refreshDynamicOptions() {
-			const y = Number(yearSelect.value);
-			const { weekList, monthList } = computeAvailableForYear(y);
-
-			// FLEXIBLE FALLBACKS if no data for that year:
-			// Weekly: allow week 1-3 (as you requested)
-			const weeksFinal = weekList.length ? weekList : [1, 2, 3];
-
-			// Monthly: allow all months if no data
-			const monthsFinal = monthList.length ? monthList : [0,1,2,3,4,5,6,7,8,9,10,11];
-
-			setSelectOptions(
-				weekSelect,
-				weeksFinal.map((w) => ({ label: `Week ${w}`, value: w })),
-				weeksFinal[0]
-			);
-
-			setSelectOptions(
-				monthSelect,
-				monthsFinal.map((m) => ({ label: months[m], value: m })),
-				monthsFinal[0]
-			);
-
-			// show/hide based on range
-			const v = rangeSelect.value;
-			weekWrap.style.display = v === "weekly" ? "flex" : "none";
-			monthWrap.style.display = v === "monthly" ? "flex" : "none";
-		}
-
-		rangeSelect.addEventListener("change", refreshDynamicOptions);
-		yearSelect.addEventListener("change", refreshDynamicOptions);
-		refreshDynamicOptions();
+		container.appendChild(grid);
+		container.appendChild(formGroup("Reason", reasonInput));
+		container.appendChild(formGroup("Status", statusSelect));
 
 		const actions = document.createElement("div");
 		actions.style.display = "flex";
 		actions.style.justifyContent = "flex-end";
 		actions.style.gap = "0.5rem";
-		actions.style.marginTop = "0.9rem";
 
 		const cancel = document.createElement("button");
-		cancel.type = "button";
 		cancel.className = "btn btn-outline";
+		cancel.type = "button";
 		cancel.textContent = "Cancel";
 		cancel.style.width = "auto";
-		cancel.style.padding = "0.5rem 1rem";
 		cancel.style.height = "auto";
+		cancel.style.padding = "0.5rem 1rem";
 		cancel.addEventListener("click", () => ensureModal()._refs.closeModal());
 
-		const exportBtn = document.createElement("button");
-		exportBtn.type = "button";
-		exportBtn.className = "btn btn-primary";
-		exportBtn.textContent = "Export";
-		exportBtn.style.width = "auto";
-		exportBtn.style.padding = "0.5rem 1rem";
-		exportBtn.style.height = "auto";
+		const save = document.createElement("button");
+		save.className = "btn btn-primary";
+		save.type = "button";
+		save.textContent = "Save";
+		save.style.width = "auto";
+		save.style.height = "auto";
+		save.style.padding = "0.5rem 1rem";
 
-		exportBtn.addEventListener("click", () => {
-			const all = getTransactionRows();
-			const range = rangeSelect.value;
-			const year = Number(yearSelect.value);
-
-			let filtered = all;
-			let label = "";
-
-			if (range === "weekly") {
-				const week = Number(weekSelect.value);
-				filtered = filterWeekly(all, year, week);
-				label = `${year}_Week${week}`;
-			} else if (range === "monthly") {
-				const monthIdx = Number(monthSelect.value);
-				filtered = filterMonthly(all, year, monthIdx);
-				label = `${year}_${months[monthIdx]}`;
-			} else {
-				filtered = filterYearly(all, year);
-				label = `${year}`;
-			}
-
-			exportTransactionsExcel(filtered, label);
-			openTransactionsPDFPrint(filtered, label);
+		save.addEventListener("click", () => {
+			// Update reason + status in table
+			tds[4].textContent = reasonInput.value.trim() || "—";
+			if (badge) setStatusBadge(badge, statusSelect.value);
 			ensureModal()._refs.closeModal();
 		});
 
 		actions.appendChild(cancel);
-		actions.appendChild(exportBtn);
-
-		container.appendChild(card);
-		container.appendChild(grid);
+		actions.appendChild(save);
 		container.appendChild(actions);
 
-		openModal("Export Data", container);
+		openModal(`Edit Refund (${refundId})`, container);
+	}
+
+	// ---------- Add Refund modal (Add Refund button) ----------
+	function openAddRefundModal() {
+		const container = document.createElement("div");
+		container.style.display = "flex";
+		container.style.flexDirection = "column";
+		container.style.gap = "1rem";
+
+		const grid = document.createElement("div");
+		grid.style.display = "grid";
+		grid.style.gridTemplateColumns = "repeat(2, minmax(0, 1fr))";
+		grid.style.gap = "0.9rem";
+
+		const refundId = nextRefundId();
+		const refundIdInput = makeInput("text", refundId);
+		refundIdInput.disabled = true;
+
+		const txnInput = makeInput("text", "TXN-");
+		const dateInput = makeInput("text", todayLong());
+		dateInput.disabled = true;
+
+		const amountInput = makeInput("text", "");
+		amountInput.placeholder = "₱0";
+
+		const reasonInput = makeTextarea("");
+
+		const statusSelect = makeSelect(
+			[
+				{ label: "Pending", value: "Pending" },
+				{ label: "Completed", value: "Completed" },
+				{ label: "Rejected", value: "Rejected" },
+			],
+			"Pending"
+		);
+
+		// Auto-fill amount when txn changes (if transactions exist)
+		txnInput.addEventListener("blur", () => {
+			const txnId = txnInput.value.trim();
+			if (!txnId) return;
+
+			const found = findAmountByTransactionId(txnId);
+			if (found) amountInput.value = found;
+		});
+
+		grid.appendChild(formGroup("Refund ID (Auto)", refundIdInput));
+		grid.appendChild(formGroup("Transaction ID", txnInput));
+		grid.appendChild(formGroup("Date (Auto)", dateInput));
+		grid.appendChild(formGroup("Amount", amountInput));
+
+		container.appendChild(grid);
+		container.appendChild(formGroup("Reason", reasonInput));
+		container.appendChild(formGroup("Status", statusSelect));
+
+		const actions = document.createElement("div");
+		actions.style.display = "flex";
+		actions.style.justifyContent = "flex-end";
+		actions.style.gap = "0.5rem";
+
+		const cancel = document.createElement("button");
+		cancel.className = "btn btn-outline";
+		cancel.type = "button";
+		cancel.textContent = "Cancel";
+		cancel.style.width = "auto";
+		cancel.style.height = "auto";
+		cancel.style.padding = "0.5rem 1rem";
+		cancel.addEventListener("click", () => ensureModal()._refs.closeModal());
+
+		const add = document.createElement("button");
+		add.className = "btn btn-primary";
+		add.type = "button";
+		add.textContent = "Add Refund";
+		add.style.width = "auto";
+		add.style.height = "auto";
+		add.style.padding = "0.5rem 1rem";
+
+		add.addEventListener("click", () => {
+			const tbody = document.querySelector("table tbody");
+			if (!tbody) return;
+
+			const txnId = txnInput.value.trim();
+			const amount = amountInput.value.trim();
+			const reason = reasonInput.value.trim() || "—";
+			const status = statusSelect.value;
+
+			if (!txnId || !txnId.toUpperCase().startsWith("TXN-")) {
+				showError("Please enter a valid Transaction ID (example: TXN-001230).");
+				return;
+			}
+			if (!amount) {
+				showError("Amount is required. (It can auto-fill if transaction is available)");
+				return;
+			}
+
+			// Create row (matches your table layout)
+			const tr = document.createElement("tr");
+			tr.style.borderBottom = "1px solid rgba(0, 0, 0, 0.05)";
+
+			tr.innerHTML = `
+				<td style="padding: 1rem; font-weight: 600; color: var(--primary);">
+					${escapeHtml(refundId)}
+				</td>
+				<td style="padding: 1rem">${escapeHtml(txnId)}</td>
+				<td style="padding: 1rem; color: var(--gray-500)">${escapeHtml(todayLong())}</td>
+				<td style="padding: 1rem; font-weight: 600">${escapeHtml(amount)}</td>
+				<td style="padding: 1rem; color: var(--gray-500)">${escapeHtml(reason)}</td>
+				<td style="padding: 1rem">
+					<span class="list-item-badge warning">Pending</span>
+				</td>
+				<td style="padding: 1rem">
+					<button class="btn btn-outline" style="width:auto; padding:0.25rem 0.75rem; height:auto; font-size:0.875rem;">
+						Process
+					</button>
+				</td>
+			`;
+
+			// Apply correct badge class/text based on chosen status
+			const badge = tr.querySelector("td:nth-child(6) span");
+			setStatusBadge(badge, status);
+
+			// Add at top
+			tbody.prepend(tr);
+
+			ensureModal()._refs.closeModal();
+		});
+
+		actions.appendChild(cancel);
+		actions.appendChild(add);
+		container.appendChild(actions);
+
+		openModal("Add Refund", container);
 	}
 
 	// ---------- Wire up ----------
-	function wireUpTransactionsPage() {
-		// Export Data button
-		const exportBtn = findButtonByText("Export Data");
-		if (exportBtn) exportBtn.addEventListener("click", openExportModal);
+	function wireUpRefundsPage() {
+		// Change header button text: "Process Refund" -> "Add Refund"
+		const headerButtons = $all(".card-header button.btn");
+		const addRefundBtn = headerButtons.find((b) => textLower(b) === "process refund");
+		if (addRefundBtn) {
+			addRefundBtn.textContent = "Add Refund";
+			addRefundBtn.addEventListener("click", openAddRefundModal);
+		}
 
-		// View buttons (delegation)
+		// Delegate click for "Process" (edit refund reason + status)
 		document.addEventListener("click", (e) => {
 			const btn = e.target.closest("button");
 			if (!btn) return;
-			if ((btn.textContent || "").trim().toLowerCase() !== "view") return;
+
+			const label = textLower(btn);
+			if (label !== "process") return;
 
 			const tr = btn.closest("tr");
 			if (!tr) return;
 
-			const tds = $all("td", tr);
-			const rowData = {
-				id: (tds[0]?.textContent || "").trim(),
-				dt: (tds[1]?.textContent || "").trim(),
-				items: (tds[2]?.textContent || "").trim(),
-				total: (tds[3]?.textContent || "").trim(),
-				payment: (tds[4]?.textContent || "").trim(),
-				cashier: (tds[5]?.textContent || "").trim(),
-			};
-
-			openSingleTransactionPrint(rowData);
+			openEditRefundModal(tr);
 		});
 	}
 
 	if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", wireUpTransactionsPage);
+		document.addEventListener("DOMContentLoaded", wireUpRefundsPage);
 	} else {
-		wireUpTransactionsPage();
+		wireUpRefundsPage();
 	}
 })();
