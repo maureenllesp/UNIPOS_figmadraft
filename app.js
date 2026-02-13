@@ -3055,11 +3055,10 @@ setTimeout(closeAfterPrint, 1500);
 				</td>
 			`;
 
-			// Apply correct badge class/text based on chosen status
 			const badge = tr.querySelector("td:nth-child(6) span");
 			setStatusBadge(badge, status);
 
-			// Add at top
+	
 			tbody.prepend(tr);
 
 			ensureModal()._refs.closeModal();
@@ -3072,9 +3071,9 @@ setTimeout(closeAfterPrint, 1500);
 		openModal("Add Refund", container);
 	}
 
-	// ---------- Wire up ----------
+
 	function wireUpRefundsPage() {
-		// Change header button text: "Process Refund" -> "Add Refund"
+	
 		const headerButtons = $all(".card-header button.btn");
 		const addRefundBtn = headerButtons.find((b) => textLower(b) === "process refund");
 		if (addRefundBtn) {
@@ -3082,7 +3081,7 @@ setTimeout(closeAfterPrint, 1500);
 			addRefundBtn.addEventListener("click", openAddRefundModal);
 		}
 
-		// Delegate click for "Process" (edit refund reason + status)
+	
 		document.addEventListener("click", (e) => {
 			const btn = e.target.closest("button");
 			if (!btn) return;
